@@ -1,3 +1,7 @@
 [submodule "scripts/zfs-images"]
 	path = scripts/zfs-images
 	url = https://github.com/zfsonlinux/zfs-images
+[submodule "debian"]
+	path = debian
+	url = https://github.com/c0d3z3r0/zfs-debian.git
+	branch = master
