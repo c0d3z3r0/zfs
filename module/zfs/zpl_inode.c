@@ -226,6 +226,11 @@ zpl_tmpfile(struct inode *dir, struct dentry *dentry, zpl_umode_t mode)
 
 	crhold(cr);
 	vap = kmem_zalloc(sizeof (vattr_t), KM_SLEEP);
+	/*
+	 * The VFS does not apply the umask to the provided mode as of 5.2.
+	 * Therefore, it must be applied at the filesystem layer.
+	 */
+	mode &= ~current_umask();
 	zpl_vap_init(vap, dir, mode, cr);
 
 	cookie = spl_fstrans_mark();
