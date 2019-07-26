@@ -997,14 +997,21 @@ spa_ld_log_sm_metadata(spa_t *spa)
 
 	zap_cursor_t zc;
 	zap_attribute_t za;
-	for (zap_cursor_init(&zc, spa_meta_objset(spa), spacemap_zap);
-	    zap_cursor_retrieve(&zc, &za) == 0; zap_cursor_advance(&zc)) {
+	zap_cursor_init(&zc, spa_meta_objset(spa), spacemap_zap);
+	while ((error = zap_cursor_retrieve(&zc, &za)) == 0) {
 		uint64_t log_txg = zfs_strtonum(za.za_name, NULL);
 		spa_log_sm_t *sls =
 		    spa_log_sm_alloc(za.za_first_integer, log_txg);
 		avl_add(&spa->spa_sm_logs_by_txg, sls);
+		zap_cursor_advance(&zc);
 	}
 	zap_cursor_fini(&zc);
+	if (error != ENOENT) {
+		spa_load_failed(spa, "spa_ld_unflushed_txgs(): failed at "
+		    "zap_cursor_retrieve(spacemap_zap) [error %d]",
+		    error);
+		return (error);
+	}
 
 	for (metaslab_t *m = avl_first(&spa->spa_metaslabs_by_flushed);
 	    m; m = AVL_NEXT(&spa->spa_metaslabs_by_flushed, m)) {
