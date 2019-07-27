@@ -141,9 +141,6 @@ EXPORT_SYMBOL(strfree);
 void *
 spl_kvmalloc(size_t size, gfp_t lflags)
 {
-	gfp_t kmalloc_lflags = lflags;
-	void *ptr;
-
 #ifdef HAVE_KVMALLOC
 	/*
 	 * GFP_KERNEL allocations can safely use kvmalloc which may
@@ -157,6 +154,8 @@ spl_kvmalloc(size_t size, gfp_t lflags)
 	if ((lflags & GFP_KERNEL) == GFP_KERNEL)
 		return (kvmalloc(size, lflags));
 #endif
+
+	gfp_t kmalloc_lflags = lflags;
 
 	if (size > PAGE_SIZE) {
 		/*
@@ -185,16 +184,21 @@ spl_kvmalloc(size_t size, gfp_t lflags)
 	}
 
 	/*
-	 * For non-GFP_KERNEL allocations we stick to kmalloc_node
-	 * and __vmalloc depeding on the allocation size.
+	 * We first try kmalloc - even for big sizes - and fall back to
+	 * __vmalloc if that fails.
+	 *
+	 * For non-GFP_KERNEL allocations we always stick to kmalloc_node,
+	 * and fail when kmalloc is not successful (returns NULL).
+	 * We cannot fall back to __vmalloc in this case because __vmalloc
+	 * internally uses GPF_KERNEL allocations.
 	 */
-	ptr = kmalloc_node(size, kmalloc_lflags, NUMA_NO_NODE);
-	if (ptr || size <= PAGE_SIZE) {
+	void *ptr = kmalloc_node(size, kmalloc_lflags, NUMA_NO_NODE);
+	if (ptr || size <= PAGE_SIZE ||
+	    (lflags & GFP_KERNEL) != GFP_KERNEL) {
 		return (ptr);
-	} else {
-		return (__vmalloc(size, lflags | __GFP_HIGHMEM,
-		    PAGE_KERNEL));
 	}
+
+	return (__vmalloc(size, lflags | __GFP_HIGHMEM, PAGE_KERNEL));
 }
 
 /*

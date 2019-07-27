@@ -984,9 +984,9 @@ spl_kmem_cache_create(char *name, size_t size, size_t align,
 		} else {
 			/*
 			 * All other objects are considered large and are
-			 * placed on vmem backed slabs.
+			 * placed on kvmem backed slabs.
 			 */
-			skc->skc_flags |= KMC_VMEM;
+			skc->skc_flags |= KMC_KVMEM;
 		}
 	}
 
