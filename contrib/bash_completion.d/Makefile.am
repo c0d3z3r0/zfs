@@ -1,5 +1,5 @@
-bashcompletiondir = $(sysconfdir)/bash_completion.d
+bashcompletiondir = $(datarootdir)/bash-completion/completions
 
-noinst_DATA = zfs
+bashcompletion_DATA = zfs
 
-EXTRA_DIST = $(noinst_DATA)
+EXTRA_DIST = $(bashcompletion_DATA)

@@ -444,6 +444,7 @@ systemctl --system daemon-reload >/dev/null || true
 %endif
 %config(noreplace) %{_sysconfdir}/%{name}
 %attr(440, root, root) %config(noreplace) %{_sysconfdir}/sudoers.d/*
+%{_datarootdir}/bash-completion/completions/zfs
 
 %files -n libzpool2
 %{_libdir}/libzpool.so.*
