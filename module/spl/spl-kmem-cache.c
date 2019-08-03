@@ -981,12 +981,6 @@ spl_kmem_cache_create(char *name, size_t size, size_t align,
 			 * small.
 			 */
 			skc->skc_flags |= KMC_KMEM;
-		} else if (skc->skc_flags & KMC_NODEBUG) {
-			/*
-			 * KMC_NODEBUG conflicts with KMC_KVMEM. Fall back
-			 * to KMC_KVMEM.
-			 */
-			skc->skc_flags |= KMC_VMEM;
 		} else {
 			/*
 			 * All other objects are considered large and are
