@@ -46,10 +46,45 @@ extern void strfree(char *str);
 #define	KM_ZERO		0x1000	/* zero the allocation */
 #define	KM_VMEM		0x2000	/* caller is vmem_* wrapper */
 
+static inline char *print_km_flags(int flags) {
+		char *buf = vmalloc(75);
+
+		sprintf(buf,
+		    "KM_SLEEP=%d\n"
+		    "KM_NOSLEEP=%d\n"
+		    "KM_PUSHPAGE=%d\n"
+		    "KM_ZERO=%d\n"
+		    "KM_VMEM=%d\n",
+		    ((flags & KM_SLEEP) == KM_SLEEP) ? 1 : 0,
+		    ((flags & KM_NOSLEEP) == KM_NOSLEEP) ? 1 : 0,
+		    ((flags & KM_PUSHPAGE) == KM_PUSHPAGE) ? 1 : 0,
+		    ((flags & KM_ZERO) == KM_ZERO) ? 1 : 0,
+		    ((flags & KM_VMEM) == KM_VMEM) ? 1 : 0);
+
+		return buf;
+}
+static inline char *print_gfp_flags(gfp_t flags) {
+		char *buf = vmalloc(85);
+
+		sprintf(buf,
+		    "GFP_ATOMIC=%d\n"
+		    "GFP_KERNEL=%d\n"
+				"__GFP_RECLAIM=%d\n"
+				"__GFP_IO=%d\n"
+				"__GFP_FS=%d\n",
+		    ((flags & GFP_ATOMIC) == GFP_ATOMIC) ? 1 : 0,
+		    ((flags & GFP_KERNEL) == GFP_KERNEL) ? 1 : 0,
+		    ((flags & __GFP_RECLAIM) == __GFP_RECLAIM) ? 1 : 0,
+		    ((flags & __GFP_IO) == __GFP_IO) ? 1 : 0,
+		    ((flags & __GFP_FS) == __GFP_FS) ? 1 : 0);
+
+		return buf;
+}
+
 #define	KM_PUBLIC_MASK	(KM_SLEEP | KM_NOSLEEP | KM_PUSHPAGE)
 
 static int spl_fstrans_check(void);
-void *spl_kvmalloc(size_t size, gfp_t flags);
+void *spl_kvmalloc(size_t size, gfp_t flags, const char *caller);
 
 /*
  * Convert a KM_* flags mask to its Linux GFP_* counterpart.  The conversion

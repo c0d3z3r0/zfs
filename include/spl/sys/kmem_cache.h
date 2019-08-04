@@ -56,6 +56,8 @@ enum {
 	KMC_BIT_MAX		= 20,	/* Proc handler helper bit */
 };
 
+
+
 /* kmem move callback return values */
 typedef enum kmem_cbrc {
 	KMEM_CBRC_YES		= 0,	/* Object moved */
@@ -83,6 +85,42 @@ typedef enum kmem_cbrc {
 #define	KMC_TOTAL		(1 << KMC_BIT_TOTAL)
 #define	KMC_ALLOC		(1 << KMC_BIT_ALLOC)
 #define	KMC_MAX			(1 << KMC_BIT_MAX)
+
+static const char* KMC_FLAG_NAMES[] = {
+  "KMC_NOTOUCH",
+  "KMC_NODEBUG",
+  "KMC_NOMAGAZINE",
+  "KMC_NOHASH",
+  "KMC_QCACHE",
+  "KMC_KMEM",
+  "KMC_VMEM",
+  "KMC_KVMEM",
+  "KMC_SLAB",
+  "KMC_OFFSLAB",
+  "KMC_NOEMERGENCY",
+	NULL, NULL, NULL,
+  "KMC_DEADLOCKED",
+  "KMC_GROWING",
+  "KMC_REAPING",
+  "KMC_DESTROY",
+  "KMC_TOTAL",
+  "KMC_ALLOC",
+  "KMC_MAX",
+};
+static inline char *print_kmc_flags(unsigned long flags) {
+	char *buf = vmalloc(330);
+	int pos=0;
+	for (int i=0; i<KMC_BIT_MAX; i++) {
+		if (!KMC_FLAG_NAMES[i])
+			continue;
+
+		pos += sprintf(buf+pos, "%s=%d\n",
+		    KMC_FLAG_NAMES[i],
+		    ((flags & (1<<i)) == i) ? 1 : 0);
+	}
+	return buf;
+}
+
 
 #define	KMC_REAP_CHUNK		INT_MAX
 #define	KMC_DEFAULT_SEEKS	1

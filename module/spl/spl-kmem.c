@@ -139,8 +139,18 @@ EXPORT_SYMBOL(strfree);
 #endif
 
 void *
-spl_kvmalloc(size_t size, gfp_t lflags)
+spl_kvmalloc(size_t size, gfp_t lflags, const char *caller)
 {
+
+	void *ptr;
+
+	/*
+	if (((lflags & GFP_KERNEL) != GFP_KERNEL) && ((lflags & GFP_ATOMIC) != GFP_ATOMIC))
+	printk(KERN_WARNING "%s: caller %s; kmem_flags_convert !GFP_ATOMIC && !GFP_KERNEL\nf%s",
+	__func__, caller,
+	print_gfp_flags(lflags));
+	*/
+	
 #ifdef HAVE_KVMALLOC
 	/*
 	 * GFP_KERNEL allocations can safely use kvmalloc which may
@@ -151,8 +161,15 @@ spl_kvmalloc(size_t size, gfp_t lflags)
 	 * incorrectly report this as a vmem allocation, but that is
 	 * purely cosmetic.
 	 */
-	if ((lflags & GFP_KERNEL) == GFP_KERNEL)
-		return (kvmalloc(size, lflags));
+	if ((lflags & GFP_KERNEL) == GFP_KERNEL) {
+		ptr = (kvmalloc(size, lflags));
+		if (!ptr) {
+			printk(KERN_WARNING "%s: kvmalloc called by %s failed\n%s",
+			__func__, caller,
+			print_gfp_flags(lflags));
+		}
+		return (ptr);
+	}
 #endif
 
 	gfp_t kmalloc_lflags = lflags;
@@ -192,13 +209,26 @@ spl_kvmalloc(size_t size, gfp_t lflags)
 	 * We cannot fall back to __vmalloc in this case because __vmalloc
 	 * internally uses GPF_KERNEL allocations.
 	 */
-	void *ptr = kmalloc_node(size, kmalloc_lflags, NUMA_NO_NODE);
+	ptr = kmalloc_node(size, kmalloc_lflags, NUMA_NO_NODE);
+	if (!ptr) {
+		printk(KERN_WARNING "%s: kmalloc_node called by %s failed\n%s",
+		__func__, caller,
+		print_gfp_flags(lflags));
+	}
 	if (ptr || size <= PAGE_SIZE ||
 	    (lflags & GFP_KERNEL) != GFP_KERNEL) {
 		return (ptr);
 	}
 
-	return (__vmalloc(size, lflags | __GFP_HIGHMEM, PAGE_KERNEL));
+	ptr = (__vmalloc(size, lflags | __GFP_HIGHMEM, PAGE_KERNEL));
+	if (!ptr) {
+		printk(KERN_WARNING "%s: __vmalloc called by %s failed\n%s",
+		__func__, caller,
+		print_gfp_flags(lflags));
+	}
+
+	return ptr;
+
 }
 
 /*
@@ -254,7 +284,7 @@ spl_kmem_alloc_impl(size_t size, int flags, int node)
 			}
 		} else {
 			if (flags & KM_VMEM) {
-				ptr = spl_kvmalloc(size, lflags);
+				ptr = spl_kvmalloc(size, lflags, __func__);
 			} else {
 				ptr = kmalloc_node(size, lflags, node);
 			}
@@ -465,6 +495,14 @@ spl_kmem_alloc(size_t size, int flags, const char *func, int line)
 {
 	ASSERT0(flags & ~KM_PUBLIC_MASK);
 
+	void *ptr = (spl_kmem_alloc_impl(size, flags, NUMA_NO_NODE));
+	if (!ptr) {
+		printk(KERN_WARNING "%s: spl_kmem_alloc_impl called by %s:%d returns NULL\n%s",
+		__func__, func, line,
+		print_km_flags(flags));
+	}
+	return (ptr);
+
 #if !defined(DEBUG_KMEM)
 	return (spl_kmem_alloc_impl(size, flags, NUMA_NO_NODE));
 #elif !defined(DEBUG_KMEM_TRACKING)
@@ -481,6 +519,14 @@ spl_kmem_zalloc(size_t size, int flags, const char *func, int line)
 	ASSERT0(flags & ~KM_PUBLIC_MASK);
 
 	flags |= KM_ZERO;
+
+	void *ptr = (spl_kmem_alloc_impl(size, flags, NUMA_NO_NODE));
+	if (!ptr) {
+		printk(KERN_WARNING "%s: spl_kmem_alloc_impl called by %s:%d returns NULL\n%s",
+		__func__, func, line,
+		print_km_flags(flags));
+	}
+	return (ptr);
 
 #if !defined(DEBUG_KMEM)
 	return (spl_kmem_alloc_impl(size, flags, NUMA_NO_NODE));

@@ -194,16 +194,29 @@ SPL_SHRINKER_DECLARE(spl_kmem_cache_shrinker,
 	spl_kmem_cache_generic_shrinker, KMC_DEFAULT_SEEKS);
 
 static void *
-kv_alloc(spl_kmem_cache_t *skc, int size, int flags)
+kv_alloc(spl_kmem_cache_t *skc, int size, int flags, const char *caller)
 {
 	gfp_t lflags = kmem_flags_convert(flags);
+	/*
+	if (((lflags & GFP_KERNEL) != GFP_KERNEL) && ((lflags & GFP_ATOMIC) != GFP_ATOMIC))
+		printk(KERN_WARNING "kv_alloc: kmem_flags_convert !GFP_ATOMIC && !GFP_KERNEL\n%s%s",
+		print_km_flags(flags),
+		print_gfp_flags(lflags));
+	*/
 	void *ptr;
 
 	if (skc->skc_flags & KMC_KMEM) {
 		ASSERT(ISP2(size));
 		ptr = (void *)__get_free_pages(lflags, get_order(size));
 	} else if (skc->skc_flags & KMC_KVMEM) {
-		ptr = spl_kvmalloc(size, lflags);
+		ptr = spl_kvmalloc(size, lflags, caller);
+			if (!ptr) {
+				printk(KERN_WARNING "%s: KMC_KVMEM spl_kvmalloc called by %s failed\n%s%s%s",
+				__func__, caller,
+				print_km_flags(flags),
+				print_gfp_flags(lflags),
+				print_kmc_flags(skc->skc_flags));
+			}
 	} else {
 		/*
 		 * GFP_KERNEL allocations can safely use kvmalloc which may
@@ -217,7 +230,14 @@ kv_alloc(spl_kmem_cache_t *skc, int size, int flags)
 		 * For non-GFP_KERNEL allocations we stick to __vmalloc.
 		 */
 		if ((lflags & GFP_KERNEL) == GFP_KERNEL) {
-			ptr = spl_kvmalloc(size, lflags);
+			ptr = spl_kvmalloc(size, lflags, caller);
+			if (!ptr) {
+				printk(KERN_WARNING "%s: GFP_KERNEL spl_kvmalloc called by %s failed\n%s%s%s",
+				__func__, caller,
+				print_km_flags(flags),
+				print_gfp_flags(lflags),
+				print_kmc_flags(skc->skc_flags));
+			}
 		} else {
 			ptr = __vmalloc(size, lflags | __GFP_HIGHMEM,
 			    PAGE_KERNEL);
@@ -327,7 +347,7 @@ spl_offslab_size(spl_kmem_cache_t *skc)
  * +------------------------+       +-----------------+     v
  */
 static spl_kmem_slab_t *
-spl_slab_alloc(spl_kmem_cache_t *skc, int flags)
+spl_slab_alloc(spl_kmem_cache_t *skc, int flags, const char *caller)
 {
 	spl_kmem_slab_t *sks;
 	spl_kmem_obj_t *sko, *n;
@@ -335,7 +355,13 @@ spl_slab_alloc(spl_kmem_cache_t *skc, int flags)
 	uint32_t obj_size, offslab_size = 0;
 	int i,  rc = 0;
 
-	base = kv_alloc(skc, skc->skc_slab_size, flags);
+	base = kv_alloc(skc, skc->skc_slab_size, flags, caller);
+	if (!base) {
+		printk(KERN_WARNING "%s: base kv_alloc failed; caller=%s\n%s%s",
+		__func__, caller,
+		print_km_flags(flags),
+		print_kmc_flags(skc->skc_flags));
+	}
 	if (base == NULL)
 		return (NULL);
 
@@ -354,8 +380,12 @@ spl_slab_alloc(spl_kmem_cache_t *skc, int flags)
 
 	for (i = 0; i < sks->sks_objs; i++) {
 		if (skc->skc_flags & KMC_OFFSLAB) {
-			obj = kv_alloc(skc, offslab_size, flags);
+			obj = kv_alloc(skc, offslab_size, flags, caller);
 			if (!obj) {
+				printk(KERN_WARNING "%s: sks i=%d: kv_alloc failed; caller=%s\n%s%s",
+				__func__, i, caller,
+				print_km_flags(flags),
+				print_kmc_flags(skc->skc_flags));
 				rc = -ENOMEM;
 				goto out;
 			}
@@ -1176,12 +1206,18 @@ spl_cache_obj(spl_kmem_cache_t *skc, spl_kmem_slab_t *sks)
  * of partial slabs, and then waking any waiters.
  */
 static int
-__spl_cache_grow(spl_kmem_cache_t *skc, int flags)
+__spl_cache_grow(spl_kmem_cache_t *skc, int flags, const char *caller)
 {
 	spl_kmem_slab_t *sks;
 
 	fstrans_cookie_t cookie = spl_fstrans_mark();
-	sks = spl_slab_alloc(skc, flags);
+	sks = spl_slab_alloc(skc, flags, caller);
+	if(!sks) {
+		printk(KERN_WARNING "%s: spl_slab_alloc failed; caller=%s\n%s%s",
+		__func__, caller,
+		print_km_flags(flags),
+		print_kmc_flags(skc->skc_flags));
+	}
 	spl_fstrans_unmark(cookie);
 
 	spin_lock(&skc->skc_lock);
@@ -1206,8 +1242,13 @@ spl_cache_grow_work(void *data)
 	spl_kmem_alloc_t *ska = (spl_kmem_alloc_t *)data;
 	spl_kmem_cache_t *skc = ska->ska_cache;
 
-	(void) __spl_cache_grow(skc, ska->ska_flags);
-
+	int ret = __spl_cache_grow(skc, ska->ska_flags, __func__);
+	if(ret != 0) {
+		printk(KERN_WARNING "%s: __spl_cache_grow failed\n%s%s",
+		__func__,
+		print_km_flags(ska->ska_flags),
+		print_kmc_flags(skc->skc_flags));
+	}
 	atomic_dec(&skc->skc_ref);
 	smp_mb__before_atomic();
 	clear_bit(KMC_BIT_GROWING, &skc->skc_flags);
@@ -1261,9 +1302,14 @@ spl_cache_grow(spl_kmem_cache_t *skc, int flags, void **obj)
 	 * __vmalloc() doesn't honor gfp flags in page table allocation.
 	 */
 	if (!(skc->skc_flags & KMC_VMEM) && !(skc->skc_flags & KMC_KVMEM)) {
-		rc = __spl_cache_grow(skc, flags | KM_NOSLEEP);
-		if (rc == 0)
+		rc = __spl_cache_grow(skc, flags | KM_NOSLEEP, __func__);
+		if (rc == 0) {
+			printk(KERN_WARNING "%s: __spl_cache_grow failed\n%s%s",
+			__func__,
+			print_km_flags(flags | KM_NOSLEEP),
+			print_kmc_flags(skc->skc_flags));
 			return (0);
+		}
 	}
 
 	/*

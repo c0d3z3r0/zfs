@@ -83,6 +83,11 @@ spl_vmem_alloc(size_t size, int flags, const char *func, int line)
 
 	flags |= KM_VMEM;
 
+	void *ptr = (spl_kmem_alloc_impl(size, flags, NUMA_NO_NODE));
+	if (!ptr)
+		printk(KERN_WARNING "%s: called by %s:%d returns NULL\n", __func__, func, line);
+	return (ptr);
+
 #if !defined(DEBUG_KMEM)
 	return (spl_kmem_alloc_impl(size, flags, NUMA_NO_NODE));
 #elif !defined(DEBUG_KMEM_TRACKING)
@@ -99,6 +104,11 @@ spl_vmem_zalloc(size_t size, int flags, const char *func, int line)
 	ASSERT0(flags & ~KM_PUBLIC_MASK);
 
 	flags |= (KM_VMEM | KM_ZERO);
+
+	void *ptr = (spl_kmem_alloc_impl(size, flags, NUMA_NO_NODE));
+	if (!ptr)
+		printk(KERN_WARNING "%s: called by %s:%d returns NULL\n", __func__, func, line);
+	return (ptr);
 
 #if !defined(DEBUG_KMEM)
 	return (spl_kmem_alloc_impl(size, flags, NUMA_NO_NODE));
