@@ -208,6 +208,10 @@ kv_alloc(spl_kmem_cache_t *skc, int size, int flags, const char *caller)
 	if (skc->skc_flags & KMC_KMEM) {
 		ASSERT(ISP2(size));
 		ptr = (void *)__get_free_pages(lflags, get_order(size));
+	} else {
+		ptr = spl_kvmalloc(size, lflags, caller);
+	}
+	/*
 	} else if (skc->skc_flags & KMC_KVMEM) {
 		ptr = spl_kvmalloc(size, lflags, caller);
 			if (!ptr) {
@@ -229,6 +233,7 @@ kv_alloc(spl_kmem_cache_t *skc, int size, int flags, const char *caller)
 		 *
 		 * For non-GFP_KERNEL allocations we stick to __vmalloc.
 		 */
+		/*
 		if ((lflags & GFP_KERNEL) == GFP_KERNEL) {
 			ptr = spl_kvmalloc(size, lflags, caller);
 			if (!ptr) {
@@ -242,7 +247,7 @@ kv_alloc(spl_kmem_cache_t *skc, int size, int flags, const char *caller)
 			ptr = __vmalloc(size, lflags | __GFP_HIGHMEM,
 			    PAGE_KERNEL);
 		}
-	}
+	}*/
 
 	/* Resulting allocated memory will be page aligned */
 	ASSERT(IS_P2ALIGNED(ptr, PAGE_SIZE));

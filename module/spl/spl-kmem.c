@@ -137,6 +137,10 @@ EXPORT_SYMBOL(strfree);
 #ifndef __GFP_RETRY_MAYFAIL
 #define	__GFP_RETRY_MAYFAIL	__GFP_REPEAT
 #endif
+/* kernel compat for <4.4 */
+#ifndef __GFP_RECLAIM
+#define	__GFP_RECLAIM	__GFP_WAIT
+#endif
 
 void *
 spl_kvmalloc(size_t size, gfp_t lflags, const char *caller)
@@ -153,7 +157,7 @@ spl_kvmalloc(size_t size, gfp_t lflags, const char *caller)
 	
 #ifdef HAVE_KVMALLOC
 	/*
-	 * GFP_KERNEL allocations can safely use kvmalloc which may
+	 * __GFP_RECLAIM allocations can safely use kvmalloc which may
 	 * improve performance by avoiding a) high latency caused by
 	 * vmalloc's on-access allocation, b) performance loss due to
 	 * MMU memory address mapping and c) vmalloc locking overhead.
@@ -161,7 +165,7 @@ spl_kvmalloc(size_t size, gfp_t lflags, const char *caller)
 	 * incorrectly report this as a vmem allocation, but that is
 	 * purely cosmetic.
 	 */
-	if ((lflags & GFP_KERNEL) == GFP_KERNEL) {
+	if ((lflags & __GFP_RECLAIM) == __GFP_RECLAIM) {
 		ptr = (kvmalloc(size, lflags));
 		if (!ptr) {
 			printk(KERN_WARNING "%s: kvmalloc called by %s failed\n%s",
@@ -216,7 +220,7 @@ spl_kvmalloc(size_t size, gfp_t lflags, const char *caller)
 		print_gfp_flags(lflags));
 	}
 	if (ptr || size <= PAGE_SIZE ||
-	    (lflags & GFP_KERNEL) != GFP_KERNEL) {
+	    (lflags & __GFP_RECLAIM) != __GFP_RECLAIM) {
 		return (ptr);
 	}
 
