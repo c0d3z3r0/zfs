@@ -543,6 +543,8 @@ error:
 	}
 }
 
+#if 0
+/* We might still need this in the future */
 static void
 zio_getcomplevel(zio_t *zio, abd_t *data, uint64_t size)
 {
@@ -563,6 +565,7 @@ zio_getcomplevel(zio_t *zio, abd_t *data, uint64_t size)
 			zio->io_error = SET_ERROR(EIO);
 	}
 }
+#endif
 
 /*
  * ==========================================================================
