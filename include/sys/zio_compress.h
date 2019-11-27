@@ -63,12 +63,12 @@ typedef size_t zio_compress_func_t(void *src, void *dst,
 /* Common signature for all zio decompress functions. */
 typedef int zio_decompress_func_t(void *src, void *dst,
     size_t s_len, size_t d_len, int);
-
 /* Common signature for all zio decompress and get level functions. */
 typedef int zio_decompresslevel_func_t(void *src, void *dst,
     size_t s_len, size_t d_len, uint8_t *level);
 /* Common signature for all zio get-compression-level functions. */
 typedef int zio_getlevel_func_t(void *src, size_t s_len, uint8_t *level);
+
 
 /*
  * Common signature for all zio decompress functions using an ABD as input.

@@ -25,7 +25,7 @@
  * Copyright (c) 2014 by Saso Kiselkov. All rights reserved.
  * Copyright 2017 Nexenta Systems, Inc.  All rights reserved.
  * Copyright (c) 2019, loli10K <ezomori.nozomu@gmail.com>. All rights reserved.
- * Copyright (c) 2019 by Klara Inc.
+ * Portions Copyright (c) 2019 by Klara Inc.
  */
 
 /*
@@ -1634,7 +1634,6 @@ arc_hdr_authenticate(arc_buf_hdr_t *hdr, spa_t *spa, uint64_t dsobj)
 		tmpbuf = zio_buf_alloc(lsize);
 		abd = abd_get_from_buf(tmpbuf, lsize);
 		abd_take_ownership_of_buf(abd, B_TRUE);
-
 		csize = zio_compress_data(HDR_GET_COMPRESS(hdr),
 		    hdr->b_l1hdr.b_pabd, tmpbuf, lsize, hdr->b_complevel);
 		ASSERT3U(csize, <=, psize);
@@ -8134,6 +8133,7 @@ l2arc_apply_transforms(spa_t *spa, arc_buf_hdr_t *hdr, uint64_t asize,
 
 		psize = zio_compress_data(compress, to_write, tmp, size,
 		    hdr->b_complevel);
+
 		ASSERT3U(psize, <=, HDR_GET_PSIZE(hdr));
 		if (psize < asize)
 			bzero((char *)tmp + psize, asize - psize);

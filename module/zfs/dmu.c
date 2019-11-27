@@ -2169,6 +2169,7 @@ dmu_write_policy(objset_t *os, dnode_t *dn, int level, int wp, zio_prop_t *zp)
 	} else {
 		compress = zio_compress_select(os->os_spa, dn->dn_compress,
 		    compress);
+
 #if 0
 /* XXX: Allan: Does the dnode need the compress level? */
 		complevel = zio_complevel_select(os->os_spa, dn->dn_compress,
