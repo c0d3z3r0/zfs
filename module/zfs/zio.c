@@ -542,7 +542,6 @@ error:
 }
 
 #if 0
-/* We might still need this in the future */
 static void
 zio_getcomplevel(zio_t *zio, abd_t *data, uint64_t size)
 {
