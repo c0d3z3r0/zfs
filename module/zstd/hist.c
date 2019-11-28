@@ -1,3 +1,4 @@
+/* BEGIN CSTYLED */
 /* ******************************************************************
    hist : Histogram functions
    part of Finite State Entropy project
@@ -34,14 +35,12 @@
 ****************************************************************** */
 
 /* --- dependencies --- */
-#include "mem.h"             /* U32, BYTE, etc. */
-#include "debug.h"           /* assert, DEBUGLOG */
-#include "error_private.h"   /* ERROR */
-#include "hist.h"
+#include <sys/zstd/mem.h>             /* U32, BYTE, etc. */
+#include <sys/zstd/debug.h>           /* assert, DEBUGLOG */
+#include <sys/zstd/error_private.h>   /* ERROR */
+#include <sys/zstd/hist.h>
 
-
-/* --- Error management --- */
-unsigned HIST_isError(size_t code) { return ERR_isError(code); }
+typedef enum { trustInput, checkMaxSymbolValue } HIST_checkInput_e;
 
 /*-**************************************************************
  *  Histogram functions
@@ -72,9 +71,6 @@ unsigned HIST_count_simple(unsigned* count, unsigned* maxSymbolValuePtr,
 
     return largestCount;
 }
-
-typedef enum { trustInput, checkMaxSymbolValue } HIST_checkInput_e;
-
 /* HIST_count_parallel_wksp() :
  * store histogram into 4 intermediate tables, recombined at the end.
  * this design makes better use of OoO cpus,
@@ -162,22 +158,14 @@ static size_t HIST_count_parallel_wksp(
  * `workSpaceSize` must be >= HIST_WKSP_SIZE
  */
 size_t HIST_countFast_wksp(unsigned* count, unsigned* maxSymbolValuePtr,
-                          const void* source, size_t sourceSize,
-                          void* workSpace, size_t workSpaceSize)
+                       const void* source, size_t sourceSize,
+                       void* workSpace, size_t workSpaceSize)
 {
     if (sourceSize < 1500) /* heuristic threshold */
         return HIST_count_simple(count, maxSymbolValuePtr, source, sourceSize);
     if ((size_t)workSpace & 3) return ERROR(GENERIC);  /* must be aligned on 4-bytes boundaries */
     if (workSpaceSize < HIST_WKSP_SIZE) return ERROR(workSpace_tooSmall);
     return HIST_count_parallel_wksp(count, maxSymbolValuePtr, source, sourceSize, trustInput, (U32*)workSpace);
-}
-
-/* fast variant (unsafe : won't check if src contains values beyond count[] limit) */
-size_t HIST_countFast(unsigned* count, unsigned* maxSymbolValuePtr,
-                     const void* source, size_t sourceSize)
-{
-    unsigned tmpCounters[HIST_WKSP_SIZE_U32];
-    return HIST_countFast_wksp(count, maxSymbolValuePtr, source, sourceSize, tmpCounters, sizeof(tmpCounters));
 }
 
 /* HIST_count_wksp() :
@@ -194,10 +182,4 @@ size_t HIST_count_wksp(unsigned* count, unsigned* maxSymbolValuePtr,
     *maxSymbolValuePtr = 255;
     return HIST_countFast_wksp(count, maxSymbolValuePtr, source, sourceSize, workSpace, workSpaceSize);
 }
-
-size_t HIST_count(unsigned* count, unsigned* maxSymbolValuePtr,
-                 const void* src, size_t srcSize)
-{
-    unsigned tmpCounters[HIST_WKSP_SIZE_U32];
-    return HIST_count_wksp(count, maxSymbolValuePtr, src, srcSize, tmpCounters, sizeof(tmpCounters));
-}
+/* END CSTYLED */

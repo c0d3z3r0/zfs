@@ -1,3 +1,4 @@
+/* BEGIN CSTYLED */
 /*
  * Copyright (c) 2016-present, Yann Collet, Facebook, Inc.
  * All rights reserved.
@@ -14,15 +15,14 @@
 /*-*******************************************************
 *  Dependencies
 *********************************************************/
-#include <string.h>      /* memcpy, memmove, memset */
-#include "cpu.h"         /* bmi2 */
-#include "mem.h"         /* low level memory routines */
+#include <sys/zstd/cpu.h>         /* bmi2 */
+#include <sys/zstd/mem.h>         /* low level memory routines */
 #define FSE_STATIC_LINKING_ONLY
-#include "fse.h"
+#include <sys/zstd/fse.h>
 #define HUF_STATIC_LINKING_ONLY
-#include "huf.h"
-#include "zstd_decompress_internal.h"
-#include "zstd_ddict.h"
+#include <sys/zstd/huf.h>
+#include <sys/zstd/zstd_decompress_internal.h>
+#include <sys/zstd/zstd_ddict.h>
 
 #if defined(ZSTD_LEGACY_SUPPORT) && (ZSTD_LEGACY_SUPPORT>=1)
 #  include "zstd_legacy.h"
@@ -238,3 +238,4 @@ unsigned ZSTD_getDictID_fromDDict(const ZSTD_DDict* ddict)
     if (ddict==NULL) return 0;
     return ZSTD_getDictID_fromDict(ddict->dictContent, ddict->dictSize);
 }
+/* END CSTYLED */

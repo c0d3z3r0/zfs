@@ -1,3 +1,4 @@
+/* BEGIN CSTYLED */
 /*
    xxHash - Extremely Fast Hash algorithm
    Header File
@@ -87,7 +88,7 @@ typedef enum { XXH_OK=0, XXH_ERROR } XXH_errorcode;
 *   in order to inline them, and remove their symbol from the public list.
 *   Methodology :
 *     #define XXH_PRIVATE_API
-*     #include "xxhash.h"
+*     #include <sys/zstd/xxhash.h"
 *   `xxhash.c` is automatically included.
 *   It's not useful to compile and link it as a separate module anymore.
 */
@@ -293,13 +294,10 @@ XXH_PUBLIC_API XXH64_hash_t XXH64_hashFromCanonical(const XXH64_canonical_t* src
    };   /* typedef'd to XXH64_state_t */
 
 
-#  ifdef XXH_PRIVATE_API
-#    include "xxhash.c"   /* include xxhash functions as `static`, for inlining */
-#  endif
-
 #endif /* XXH_STATIC_LINKING_ONLY && XXH_STATIC_H_3543687687345 */
 
 
 #if defined (__cplusplus)
 }
 #endif
+/* END CSTYLED */

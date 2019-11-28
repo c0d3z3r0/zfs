@@ -1,3 +1,4 @@
+/* BEGIN CSTYLED */
 /*
  * Copyright (c) 2016-present, Yann Collet, Facebook, Inc.
  * All rights reserved.
@@ -19,22 +20,24 @@ extern "C" {
 *  Dependencies
 ******************************************/
 #include <stddef.h>     /* size_t, ptrdiff_t */
-#include <string.h>     /* memcpy */
-
+#ifndef _KERNEL
+#include <stdlib.h>
+#include <string.h>
+#else
+#include <sys/zfs_context.h>
+#undef malloc
+#define	malloc(x)	kmem_alloc((x), KM_SLEEP)
+#define	free(x)		kmem_free((x), 0)
+#define	calloc(a, b)	kmem_zalloc((a) * (b), KM_SLEEP)
+#endif
 
 /*-****************************************
 *  Compiler specifics
 ******************************************/
-#if defined(_MSC_VER)   /* Visual Studio */
-#   include <stdlib.h>  /* _byteswap_ulong */
-#   include <intrin.h>  /* _byteswap_* */
-#endif
 #if defined(__GNUC__)
 #  define MEM_STATIC static __inline __attribute__((unused))
 #elif defined (__cplusplus) || (defined (__STDC_VERSION__) && (__STDC_VERSION__ >= 199901L) /* C99 */)
 #  define MEM_STATIC static inline
-#elif defined(_MSC_VER)
-#  define MEM_STATIC static __inline
 #else
 #  define MEM_STATIC static  /* this version may generate warnings for unused static functions; disable the relevant warning */
 #endif
@@ -52,7 +55,9 @@ MEM_STATIC void MEM_check(void) { MEM_STATIC_ASSERT((sizeof(size_t)==4) || (size
 *  Basic Types
 *****************************************************************/
 #if  !defined (__VMS) && (defined (__cplusplus) || (defined (__STDC_VERSION__) && (__STDC_VERSION__ >= 199901L) /* C99 */) )
+#ifndef _KERNEL
 # include <stdint.h>
+#endif
   typedef   uint8_t BYTE;
   typedef  uint16_t U16;
   typedef   int16_t S16;
@@ -102,7 +107,7 @@ MEM_STATIC void MEM_check(void) { MEM_STATIC_ASSERT((sizeof(size_t)==4) || (size
 #ifndef MEM_FORCE_MEMORY_ACCESS   /* can be defined externally, on command line for example */
 #  if defined(__GNUC__) && ( defined(__ARM_ARCH_6__) || defined(__ARM_ARCH_6J__) || defined(__ARM_ARCH_6K__) || defined(__ARM_ARCH_6Z__) || defined(__ARM_ARCH_6ZK__) || defined(__ARM_ARCH_6T2__) )
 #    define MEM_FORCE_MEMORY_ACCESS 2
-#  elif defined(__INTEL_COMPILER) || defined(__GNUC__) || defined(__ICCARM__)
+#  elif defined(__INTEL_COMPILER) || defined(__GNUC__)
 #    define MEM_FORCE_MEMORY_ACCESS 1
 #  endif
 #endif
@@ -378,3 +383,4 @@ MEM_STATIC void MEM_writeBEST(void* memPtr, size_t val)
 #endif
 
 #endif /* MEM_H_MODULE */
+/* END CSTYLED */

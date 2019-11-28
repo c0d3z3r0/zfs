@@ -1,3 +1,4 @@
+/* BEGIN CSTYLED */
 /*
 *  xxHash - Fast Hash algorithm
 *  Copyright (C) 2012-2016, Yann Collet
@@ -32,6 +33,7 @@
 *  - xxHash source repository : https://github.com/Cyan4973/xxHash
 */
 
+#include <sys/zstd/mem.h>
 
 /* *************************************
 *  Tuning parameters
@@ -53,8 +55,7 @@
 #  if defined(__GNUC__) && ( defined(__ARM_ARCH_6__) || defined(__ARM_ARCH_6J__) || defined(__ARM_ARCH_6K__) || defined(__ARM_ARCH_6Z__) || defined(__ARM_ARCH_6ZK__) || defined(__ARM_ARCH_6T2__) )
 #    define XXH_FORCE_MEMORY_ACCESS 2
 #  elif (defined(__INTEL_COMPILER) && !defined(WIN32)) || \
-  (defined(__GNUC__) && ( defined(__ARM_ARCH_7__) || defined(__ARM_ARCH_7A__) || defined(__ARM_ARCH_7R__) || defined(__ARM_ARCH_7M__) || defined(__ARM_ARCH_7S__) )) || \
-  defined(__ICCARM__)
+  (defined(__GNUC__) && ( defined(__ARM_ARCH_7__) || defined(__ARM_ARCH_7A__) || defined(__ARM_ARCH_7R__) || defined(__ARM_ARCH_7M__) || defined(__ARM_ARCH_7S__) ))
 #    define XXH_FORCE_MEMORY_ACCESS 1
 #  endif
 #endif
@@ -98,64 +99,17 @@
 ***************************************/
 /* Modify the local functions below should you wish to use some other memory routines */
 /* for malloc(), free() */
-#include <stdlib.h>
-#include <stddef.h>     /* size_t */
-static void* XXH_malloc(size_t s) { return malloc(s); }
-static void  XXH_free  (void* p)  { free(p); }
-/* for memcpy() */
-#include <string.h>
 static void* XXH_memcpy(void* dest, const void* src, size_t size) { return memcpy(dest,src,size); }
 
 #ifndef XXH_STATIC_LINKING_ONLY
 #  define XXH_STATIC_LINKING_ONLY
 #endif
-#include "xxhash.h"
-
-
-/* *************************************
-*  Compiler Specific Options
-***************************************/
-#if defined (__GNUC__) || defined(__cplusplus) || defined(__STDC_VERSION__) && __STDC_VERSION__ >= 199901L   /* C99 */
-#  define INLINE_KEYWORD inline
-#else
-#  define INLINE_KEYWORD
-#endif
-
-#if defined(__GNUC__) || defined(__ICCARM__)
-#  define FORCE_INLINE_ATTR __attribute__((always_inline))
-#elif defined(_MSC_VER)
-#  define FORCE_INLINE_ATTR __forceinline
-#else
-#  define FORCE_INLINE_ATTR
-#endif
-
-#define FORCE_INLINE_TEMPLATE static INLINE_KEYWORD FORCE_INLINE_ATTR
+#include <sys/zstd/xxhash.h>
+#include <sys/zstd/compiler.h>
 
 
 #ifdef _MSC_VER
 #  pragma warning(disable : 4127)      /* disable: C4127: conditional expression is constant */
-#endif
-
-
-/* *************************************
-*  Basic Types
-***************************************/
-#ifndef MEM_MODULE
-# define MEM_MODULE
-# if !defined (__VMS) && (defined (__cplusplus) || (defined (__STDC_VERSION__) && (__STDC_VERSION__ >= 199901L) /* C99 */) )
-#   include <stdint.h>
-    typedef uint8_t  BYTE;
-    typedef uint16_t U16;
-    typedef uint32_t U32;
-    typedef  int32_t S32;
-    typedef uint64_t U64;
-#  else
-    typedef unsigned char      BYTE;
-    typedef unsigned short     U16;
-    typedef unsigned int       U32;
-    typedef   signed int       S32;
-    typedef unsigned long long U64;   /* if your compiler doesn't support unsigned long long, replace by another 64-bit type here. Note that xxhash.h will also need to be updated. */
-#  endif
 #endif
 
 
@@ -200,48 +154,17 @@ static U64 XXH_read64(const void* memPtr)
 /* ****************************************
 *  Compiler-specific Functions and Macros
 ******************************************/
-#define GCC_VERSION (__GNUC__ * 100 + __GNUC_MINOR__)
-
 /* Note : although _rotl exists for minGW (GCC under windows), performance seems poor */
 #if defined(_MSC_VER)
 #  define XXH_rotl32(x,r) _rotl(x,r)
 #  define XXH_rotl64(x,r) _rotl64(x,r)
 #else
-#if defined(__ICCARM__)
-#  include <intrinsics.h>
-#  define XXH_rotl32(x,r) __ROR(x,(32 - r))
-#else
 #  define XXH_rotl32(x,r) ((x << r) | (x >> (32 - r)))
-#endif
 #  define XXH_rotl64(x,r) ((x << r) | (x >> (64 - r)))
 #endif
 
-#if defined(_MSC_VER)     /* Visual Studio */
-#  define XXH_swap32 _byteswap_ulong
-#  define XXH_swap64 _byteswap_uint64
-#elif GCC_VERSION >= 403
 #  define XXH_swap32 __builtin_bswap32
 #  define XXH_swap64 __builtin_bswap64
-#else
-static U32 XXH_swap32 (U32 x)
-{
-    return  ((x << 24) & 0xff000000 ) |
-            ((x <<  8) & 0x00ff0000 ) |
-            ((x >>  8) & 0x0000ff00 ) |
-            ((x >> 24) & 0x000000ff );
-}
-static U64 XXH_swap64 (U64 x)
-{
-    return  ((x << 56) & 0xff00000000000000ULL) |
-            ((x << 40) & 0x00ff000000000000ULL) |
-            ((x << 24) & 0x0000ff0000000000ULL) |
-            ((x << 8)  & 0x000000ff00000000ULL) |
-            ((x >> 8)  & 0x00000000ff000000ULL) |
-            ((x >> 24) & 0x0000000000ff0000ULL) |
-            ((x >> 40) & 0x000000000000ff00ULL) |
-            ((x >> 56) & 0x00000000000000ffULL);
-}
-#endif
 
 
 /* *************************************
@@ -274,11 +197,6 @@ FORCE_INLINE_TEMPLATE U32 XXH_readLE32(const void* ptr, XXH_endianess endian)
     return XXH_readLE32_align(ptr, endian, XXH_unaligned);
 }
 
-static U32 XXH_readBE32(const void* ptr)
-{
-    return XXH_CPU_LITTLE_ENDIAN ? XXH_swap32(XXH_read32(ptr)) : XXH_read32(ptr);
-}
-
 FORCE_INLINE_TEMPLATE U64 XXH_readLE64_align(const void* ptr, XXH_endianess endian, XXH_alignment align)
 {
     if (align==XXH_unaligned)
@@ -291,12 +209,6 @@ FORCE_INLINE_TEMPLATE U64 XXH_readLE64(const void* ptr, XXH_endianess endian)
 {
     return XXH_readLE64_align(ptr, endian, XXH_unaligned);
 }
-
-static U64 XXH_readBE64(const void* ptr)
-{
-    return XXH_CPU_LITTLE_ENDIAN ? XXH_swap64(XXH_read64(ptr)) : XXH_read64(ptr);
-}
-
 
 /* *************************************
 *  Macros
@@ -318,23 +230,6 @@ static const U64 PRIME64_2 = 14029467366897019727ULL;
 static const U64 PRIME64_3 =  1609587929392839161ULL;
 static const U64 PRIME64_4 =  9650029242287828579ULL;
 static const U64 PRIME64_5 =  2870177450012600261ULL;
-
-XXH_PUBLIC_API unsigned XXH_versionNumber (void) { return XXH_VERSION_NUMBER; }
-
-
-/* **************************
-*  Utils
-****************************/
-XXH_PUBLIC_API void XXH32_copyState(XXH32_state_t* restrict dstState, const XXH32_state_t* restrict srcState)
-{
-    memcpy(dstState, srcState, sizeof(*dstState));
-}
-
-XXH_PUBLIC_API void XXH64_copyState(XXH64_state_t* restrict dstState, const XXH64_state_t* restrict srcState)
-{
-    memcpy(dstState, srcState, sizeof(*dstState));
-}
-
 
 /* ***************************
 *  Simple Hash Functions
@@ -403,34 +298,6 @@ FORCE_INLINE_TEMPLATE U32 XXH32_endian_align(const void* input, size_t len, U32 
 
     return h32;
 }
-
-
-XXH_PUBLIC_API unsigned int XXH32 (const void* input, size_t len, unsigned int seed)
-{
-#if 0
-    /* Simple version, good for code maintenance, but unfortunately slow for small inputs */
-    XXH32_CREATESTATE_STATIC(state);
-    XXH32_reset(state, seed);
-    XXH32_update(state, input, len);
-    return XXH32_digest(state);
-#else
-    XXH_endianess endian_detected = (XXH_endianess)XXH_CPU_LITTLE_ENDIAN;
-
-    if (XXH_FORCE_ALIGN_CHECK) {
-        if ((((size_t)input) & 3) == 0) {   /* Input is 4-bytes aligned, leverage the speed benefit */
-            if ((endian_detected==XXH_littleEndian) || XXH_FORCE_NATIVE_FORMAT)
-                return XXH32_endian_align(input, len, seed, XXH_littleEndian, XXH_aligned);
-            else
-                return XXH32_endian_align(input, len, seed, XXH_bigEndian, XXH_aligned);
-    }   }
-
-    if ((endian_detected==XXH_littleEndian) || XXH_FORCE_NATIVE_FORMAT)
-        return XXH32_endian_align(input, len, seed, XXH_littleEndian, XXH_unaligned);
-    else
-        return XXH32_endian_align(input, len, seed, XXH_bigEndian, XXH_unaligned);
-#endif
-}
-
 
 static U64 XXH64_round(U64 acc, U64 input)
 {
@@ -516,73 +383,7 @@ FORCE_INLINE_TEMPLATE U64 XXH64_endian_align(const void* input, size_t len, U64 
     return h64;
 }
 
-
-XXH_PUBLIC_API unsigned long long XXH64 (const void* input, size_t len, unsigned long long seed)
-{
-#if 0
-    /* Simple version, good for code maintenance, but unfortunately slow for small inputs */
-    XXH64_CREATESTATE_STATIC(state);
-    XXH64_reset(state, seed);
-    XXH64_update(state, input, len);
-    return XXH64_digest(state);
-#else
-    XXH_endianess endian_detected = (XXH_endianess)XXH_CPU_LITTLE_ENDIAN;
-
-    if (XXH_FORCE_ALIGN_CHECK) {
-        if ((((size_t)input) & 7)==0) {  /* Input is aligned, let's leverage the speed advantage */
-            if ((endian_detected==XXH_littleEndian) || XXH_FORCE_NATIVE_FORMAT)
-                return XXH64_endian_align(input, len, seed, XXH_littleEndian, XXH_aligned);
-            else
-                return XXH64_endian_align(input, len, seed, XXH_bigEndian, XXH_aligned);
-    }   }
-
-    if ((endian_detected==XXH_littleEndian) || XXH_FORCE_NATIVE_FORMAT)
-        return XXH64_endian_align(input, len, seed, XXH_littleEndian, XXH_unaligned);
-    else
-        return XXH64_endian_align(input, len, seed, XXH_bigEndian, XXH_unaligned);
-#endif
-}
-
-
-/* **************************************************
-*  Advanced Hash Functions
-****************************************************/
-
-XXH_PUBLIC_API XXH32_state_t* XXH32_createState(void)
-{
-    return (XXH32_state_t*)XXH_malloc(sizeof(XXH32_state_t));
-}
-XXH_PUBLIC_API XXH_errorcode XXH32_freeState(XXH32_state_t* statePtr)
-{
-    XXH_free(statePtr);
-    return XXH_OK;
-}
-
-XXH_PUBLIC_API XXH64_state_t* XXH64_createState(void)
-{
-    return (XXH64_state_t*)XXH_malloc(sizeof(XXH64_state_t));
-}
-XXH_PUBLIC_API XXH_errorcode XXH64_freeState(XXH64_state_t* statePtr)
-{
-    XXH_free(statePtr);
-    return XXH_OK;
-}
-
-
 /*** Hash feed ***/
-
-XXH_PUBLIC_API XXH_errorcode XXH32_reset(XXH32_state_t* statePtr, unsigned int seed)
-{
-    XXH32_state_t state;   /* using a local state to memcpy() in order to avoid strict-aliasing warnings */
-    memset(&state, 0, sizeof(state)-4);   /* do not write into reserved, for future removal */
-    state.v1 = seed + PRIME32_1 + PRIME32_2;
-    state.v2 = seed + PRIME32_2;
-    state.v3 = seed + 0;
-    state.v4 = seed - PRIME32_1;
-    memcpy(statePtr, &state, sizeof(state));
-    return XXH_OK;
-}
-
 
 XXH_PUBLIC_API XXH_errorcode XXH64_reset(XXH64_state_t* statePtr, unsigned long long seed)
 {
@@ -655,18 +456,6 @@ FORCE_INLINE_TEMPLATE XXH_errorcode XXH32_update_endian (XXH32_state_t* state, c
     return XXH_OK;
 }
 
-XXH_PUBLIC_API XXH_errorcode XXH32_update (XXH32_state_t* state_in, const void* input, size_t len)
-{
-    XXH_endianess endian_detected = (XXH_endianess)XXH_CPU_LITTLE_ENDIAN;
-
-    if ((endian_detected==XXH_littleEndian) || XXH_FORCE_NATIVE_FORMAT)
-        return XXH32_update_endian(state_in, input, len, XXH_littleEndian);
-    else
-        return XXH32_update_endian(state_in, input, len, XXH_bigEndian);
-}
-
-
-
 FORCE_INLINE_TEMPLATE U32 XXH32_digest_endian (const XXH32_state_t* state, XXH_endianess endian)
 {
     const BYTE * p = (const BYTE*)state->mem32;
@@ -701,19 +490,6 @@ FORCE_INLINE_TEMPLATE U32 XXH32_digest_endian (const XXH32_state_t* state, XXH_e
 
     return h32;
 }
-
-
-XXH_PUBLIC_API unsigned int XXH32_digest (const XXH32_state_t* state_in)
-{
-    XXH_endianess endian_detected = (XXH_endianess)XXH_CPU_LITTLE_ENDIAN;
-
-    if ((endian_detected==XXH_littleEndian) || XXH_FORCE_NATIVE_FORMAT)
-        return XXH32_digest_endian(state_in, XXH_littleEndian);
-    else
-        return XXH32_digest_endian(state_in, XXH_bigEndian);
-}
-
-
 
 /* **** XXH64 **** */
 
@@ -846,37 +622,4 @@ XXH_PUBLIC_API unsigned long long XXH64_digest (const XXH64_state_t* state_in)
         return XXH64_digest_endian(state_in, XXH_bigEndian);
 }
 
-
-/* **************************
-*  Canonical representation
-****************************/
-
-/*! Default XXH result types are basic unsigned 32 and 64 bits.
-*   The canonical representation follows human-readable write convention, aka big-endian (large digits first).
-*   These functions allow transformation of hash result into and from its canonical format.
-*   This way, hash values can be written into a file or buffer, and remain comparable across different systems and programs.
-*/
-
-XXH_PUBLIC_API void XXH32_canonicalFromHash(XXH32_canonical_t* dst, XXH32_hash_t hash)
-{
-    XXH_STATIC_ASSERT(sizeof(XXH32_canonical_t) == sizeof(XXH32_hash_t));
-    if (XXH_CPU_LITTLE_ENDIAN) hash = XXH_swap32(hash);
-    memcpy(dst, &hash, sizeof(*dst));
-}
-
-XXH_PUBLIC_API void XXH64_canonicalFromHash(XXH64_canonical_t* dst, XXH64_hash_t hash)
-{
-    XXH_STATIC_ASSERT(sizeof(XXH64_canonical_t) == sizeof(XXH64_hash_t));
-    if (XXH_CPU_LITTLE_ENDIAN) hash = XXH_swap64(hash);
-    memcpy(dst, &hash, sizeof(*dst));
-}
-
-XXH_PUBLIC_API XXH32_hash_t XXH32_hashFromCanonical(const XXH32_canonical_t* src)
-{
-    return XXH_readBE32(src);
-}
-
-XXH_PUBLIC_API XXH64_hash_t XXH64_hashFromCanonical(const XXH64_canonical_t* src)
-{
-    return XXH_readBE64(src);
-}
+/* END CSTYLED */

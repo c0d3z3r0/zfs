@@ -1,3 +1,4 @@
+/* BEGIN CSTYLED */
 /*
  * Copyright (c) 2016-present, Yann Collet, Facebook, Inc.
  * All rights reserved.
@@ -8,8 +9,8 @@
  * You may select, at your option, one of the above-listed licenses.
  */
 
-#include "zstd_compress_internal.h"
-#include "zstd_lazy.h"
+#include <sys/zstd/zstd_compress_internal.h>
+#include <sys/zstd/zstd_lazy.h>
 
 
 /*-*************************************
@@ -58,11 +59,11 @@ ZSTD_updateDUBT(ZSTD_matchState_t* ms,
 
 /** ZSTD_insertDUBT1() :
  *  sort one already inserted but unsorted position
- *  assumption : current >= btlow == (current - btmask)
+ *  assumption : c_current >= btlow == (c_current - btmask)
  *  doesn't fail */
 static void
 ZSTD_insertDUBT1(ZSTD_matchState_t* ms,
-                 U32 current, const BYTE* inputEnd,
+                 U32 c_current, const BYTE* inputEnd,
                  U32 nbCompares, U32 btLow,
                  const ZSTD_dictMode_e dictMode)
 {
@@ -74,41 +75,41 @@ ZSTD_insertDUBT1(ZSTD_matchState_t* ms,
     const BYTE* const base = ms->window.base;
     const BYTE* const dictBase = ms->window.dictBase;
     const U32 dictLimit = ms->window.dictLimit;
-    const BYTE* const ip = (current>=dictLimit) ? base + current : dictBase + current;
-    const BYTE* const iend = (current>=dictLimit) ? inputEnd : dictBase + dictLimit;
+    const BYTE* const ip = (c_current>=dictLimit) ? base + c_current : dictBase + c_current;
+    const BYTE* const iend = (c_current>=dictLimit) ? inputEnd : dictBase + dictLimit;
     const BYTE* const dictEnd = dictBase + dictLimit;
     const BYTE* const prefixStart = base + dictLimit;
     const BYTE* match;
-    U32* smallerPtr = bt + 2*(current&btMask);
+    U32* smallerPtr = bt + 2*(c_current&btMask);
     U32* largerPtr  = smallerPtr + 1;
     U32 matchIndex = *smallerPtr;   /* this candidate is unsorted : next sorted candidate is reached through *smallerPtr, while *largerPtr contains previous unsorted candidate (which is already saved and can be overwritten) */
     U32 dummy32;   /* to be nullified at the end */
     U32 const windowValid = ms->window.lowLimit;
     U32 const maxDistance = 1U << cParams->windowLog;
-    U32 const windowLow = (current - windowValid > maxDistance) ? current - maxDistance : windowValid;
+    U32 const windowLow = (c_current - windowValid > maxDistance) ? c_current - maxDistance : windowValid;
 
 
     DEBUGLOG(8, "ZSTD_insertDUBT1(%u) (dictLimit=%u, lowLimit=%u)",
-                current, dictLimit, windowLow);
-    assert(current >= btLow);
+                c_current, dictLimit, windowLow);
+    assert(c_current >= btLow);
     assert(ip < iend);   /* condition for ZSTD_count */
 
     while (nbCompares-- && (matchIndex > windowLow)) {
         U32* const nextPtr = bt + 2*(matchIndex & btMask);
         size_t matchLength = MIN(commonLengthSmaller, commonLengthLarger);   /* guaranteed minimum nb of common bytes */
-        assert(matchIndex < current);
+        assert(matchIndex < c_current);
         /* note : all candidates are now supposed sorted,
          * but it's still possible to have nextPtr[1] == ZSTD_DUBT_UNSORTED_MARK
          * when a real index has the same value as ZSTD_DUBT_UNSORTED_MARK */
 
         if ( (dictMode != ZSTD_extDict)
-          || (matchIndex+matchLength >= dictLimit)  /* both in current segment*/
-          || (current < dictLimit) /* both in extDict */) {
+          || (matchIndex+matchLength >= dictLimit)  /* both in c_current segment*/
+          || (c_current < dictLimit) /* both in extDict */) {
             const BYTE* const mBase = ( (dictMode != ZSTD_extDict)
                                      || (matchIndex+matchLength >= dictLimit)) ?
                                         base : dictBase;
             assert( (matchIndex+matchLength >= dictLimit)   /* might be wrong if extDict is incorrectly set to 0 */
-                 || (current < dictLimit) );
+                 || (c_current < dictLimit) );
             match = mBase + matchIndex;
             matchLength += ZSTD_count(ip+matchLength, match+matchLength, iend);
         } else {
@@ -119,23 +120,23 @@ ZSTD_insertDUBT1(ZSTD_matchState_t* ms,
         }
 
         DEBUGLOG(8, "ZSTD_insertDUBT1: comparing %u with %u : found %u common bytes ",
-                    current, matchIndex, (U32)matchLength);
+                    c_current, matchIndex, (U32)matchLength);
 
         if (ip+matchLength == iend) {   /* equal : no way to know if inf or sup */
             break;   /* drop , to guarantee consistency ; miss a bit of compression, but other solutions can corrupt tree */
         }
 
         if (match[matchLength] < ip[matchLength]) {  /* necessarily within buffer */
-            /* match is smaller than current */
+            /* match is smaller than c_current */
             *smallerPtr = matchIndex;             /* update smaller idx */
             commonLengthSmaller = matchLength;    /* all smaller will now have at least this guaranteed common length */
             if (matchIndex <= btLow) { smallerPtr=&dummy32; break; }   /* beyond tree size, stop searching */
             DEBUGLOG(8, "ZSTD_insertDUBT1: %u (>btLow=%u) is smaller : next => %u",
                         matchIndex, btLow, nextPtr[1]);
             smallerPtr = nextPtr+1;               /* new "candidate" => larger than match, which was smaller than target */
-            matchIndex = nextPtr[1];              /* new matchIndex, larger than previous and closer to current */
+            matchIndex = nextPtr[1];              /* new matchIndex, larger than previous and closer to c_current */
         } else {
-            /* match is larger than current */
+            /* match is larger than c_current */
             *largerPtr = matchIndex;
             commonLengthLarger = matchLength;
             if (matchIndex <= btLow) { largerPtr=&dummy32; break; }   /* beyond tree size, stop searching */
@@ -168,7 +169,7 @@ ZSTD_DUBT_findBetterDictMatch (
 
     const BYTE* const base = ms->window.base;
     const BYTE* const prefixStart = base + ms->window.dictLimit;
-    U32         const current = (U32)(ip-base);
+    U32         const c_current = (U32)(ip-base);
     const BYTE* const dictBase = dms->window.base;
     const BYTE* const dictEnd = dms->window.nextSrc;
     U32         const dictHighLimit = (U32)(dms->window.nextSrc - dms->window.base);
@@ -195,10 +196,10 @@ ZSTD_DUBT_findBetterDictMatch (
 
         if (matchLength > bestLength) {
             U32 matchIndex = dictMatchIndex + dictIndexDelta;
-            if ( (4*(int)(matchLength-bestLength)) > (int)(ZSTD_highbit32(current-matchIndex+1) - ZSTD_highbit32((U32)offsetPtr[0]+1)) ) {
+            if ( (4*(int)(matchLength-bestLength)) > (int)(ZSTD_highbit32(c_current-matchIndex+1) - ZSTD_highbit32((U32)offsetPtr[0]+1)) ) {
                 DEBUGLOG(9, "ZSTD_DUBT_findBetterDictMatch(%u) : found better match length %u -> %u and offsetCode %u -> %u (dictMatchIndex %u, matchIndex %u)",
-                    current, (U32)bestLength, (U32)matchLength, (U32)*offsetPtr, ZSTD_REP_MOVE + current - matchIndex, dictMatchIndex, matchIndex);
-                bestLength = matchLength, *offsetPtr = ZSTD_REP_MOVE + current - matchIndex;
+                    c_current, (U32)bestLength, (U32)matchLength, (U32)*offsetPtr, ZSTD_REP_MOVE + c_current - matchIndex, dictMatchIndex, matchIndex);
+                bestLength = matchLength, *offsetPtr = ZSTD_REP_MOVE + c_current - matchIndex;
             }
             if (ip+matchLength == iend) {   /* reached end of input : ip[matchLength] is not valid, no way to know if it's larger or smaller than match */
                 break;   /* drop, to guarantee consistency (miss a little bit of compression) */
@@ -208,9 +209,9 @@ ZSTD_DUBT_findBetterDictMatch (
         if (match[matchLength] < ip[matchLength]) {
             if (dictMatchIndex <= btLow) { break; }   /* beyond tree size, stop the search */
             commonLengthSmaller = matchLength;    /* all smaller will now have at least this guaranteed common length */
-            dictMatchIndex = nextPtr[1];              /* new matchIndex larger than previous (closer to current) */
+            dictMatchIndex = nextPtr[1];              /* new matchIndex larger than previous (closer to c_current) */
         } else {
-            /* match is larger than current */
+            /* match is larger than c_current */
             if (dictMatchIndex <= btLow) { break; }   /* beyond tree size, stop the search */
             commonLengthLarger = matchLength;
             dictMatchIndex = nextPtr[0];
@@ -218,9 +219,9 @@ ZSTD_DUBT_findBetterDictMatch (
     }
 
     if (bestLength >= MINMATCH) {
-        U32 const mIndex = current - ((U32)*offsetPtr - ZSTD_REP_MOVE); (void)mIndex;
+        U32 const mIndex = c_current - ((U32)*offsetPtr - ZSTD_REP_MOVE); (void)mIndex;
         DEBUGLOG(8, "ZSTD_DUBT_findBetterDictMatch(%u) : found match of length %u and offsetCode %u (pos %u)",
-                    current, (U32)bestLength, (U32)*offsetPtr, mIndex);
+                    c_current, (U32)bestLength, (U32)*offsetPtr, mIndex);
     }
     return bestLength;
 
@@ -241,13 +242,13 @@ ZSTD_DUBT_findBestMatch(ZSTD_matchState_t* ms,
     U32          matchIndex  = hashTable[h];
 
     const BYTE* const base = ms->window.base;
-    U32    const current = (U32)(ip-base);
-    U32    const windowLow = ZSTD_getLowestMatchIndex(ms, current, cParams->windowLog);
+    U32    const c_current = (U32)(ip-base);
+    U32    const windowLow = ZSTD_getLowestMatchIndex(ms, c_current, cParams->windowLog);
 
     U32*   const bt = ms->chainTable;
     U32    const btLog  = cParams->chainLog - 1;
     U32    const btMask = (1 << btLog) - 1;
-    U32    const btLow = (btMask >= current) ? 0 : current - btMask;
+    U32    const btLow = (btMask >= c_current) ? 0 : c_current - btMask;
     U32    const unsortLimit = MAX(btLow, windowLow);
 
     U32*         nextCandidate = bt + 2*(matchIndex&btMask);
@@ -256,7 +257,7 @@ ZSTD_DUBT_findBestMatch(ZSTD_matchState_t* ms,
     U32          nbCandidates = nbCompares;
     U32          previousCandidate = 0;
 
-    DEBUGLOG(7, "ZSTD_DUBT_findBestMatch (%u) ", current);
+    DEBUGLOG(7, "ZSTD_DUBT_findBestMatch (%u) ", c_current);
     assert(ip <= iend-8);   /* required for h calculation */
 
     /* reach end of unsorted candidates list */
@@ -299,14 +300,14 @@ ZSTD_DUBT_findBestMatch(ZSTD_matchState_t* ms,
         const U32 dictLimit = ms->window.dictLimit;
         const BYTE* const dictEnd = dictBase + dictLimit;
         const BYTE* const prefixStart = base + dictLimit;
-        U32* smallerPtr = bt + 2*(current&btMask);
-        U32* largerPtr  = bt + 2*(current&btMask) + 1;
-        U32 matchEndIdx = current + 8 + 1;
+        U32* smallerPtr = bt + 2*(c_current&btMask);
+        U32* largerPtr  = bt + 2*(c_current&btMask) + 1;
+        U32 matchEndIdx = c_current + 8 + 1;
         U32 dummy32;   /* to be nullified at the end */
         size_t bestLength = 0;
 
         matchIndex  = hashTable[h];
-        hashTable[h] = current;   /* Update Hash Table */
+        hashTable[h] = c_current;   /* Update Hash Table */
 
         while (nbCompares-- && (matchIndex > windowLow)) {
             U32* const nextPtr = bt + 2*(matchIndex & btMask);
@@ -326,8 +327,8 @@ ZSTD_DUBT_findBestMatch(ZSTD_matchState_t* ms,
             if (matchLength > bestLength) {
                 if (matchLength > matchEndIdx - matchIndex)
                     matchEndIdx = matchIndex + (U32)matchLength;
-                if ( (4*(int)(matchLength-bestLength)) > (int)(ZSTD_highbit32(current-matchIndex+1) - ZSTD_highbit32((U32)offsetPtr[0]+1)) )
-                    bestLength = matchLength, *offsetPtr = ZSTD_REP_MOVE + current - matchIndex;
+                if ( (4*(int)(matchLength-bestLength)) > (int)(ZSTD_highbit32(c_current-matchIndex+1) - ZSTD_highbit32((U32)offsetPtr[0]+1)) )
+                    bestLength = matchLength, *offsetPtr = ZSTD_REP_MOVE + c_current - matchIndex;
                 if (ip+matchLength == iend) {   /* equal : no way to know if inf or sup */
                     if (dictMode == ZSTD_dictMatchState) {
                         nbCompares = 0; /* in addition to avoiding checking any
@@ -339,14 +340,14 @@ ZSTD_DUBT_findBestMatch(ZSTD_matchState_t* ms,
             }
 
             if (match[matchLength] < ip[matchLength]) {
-                /* match is smaller than current */
+                /* match is smaller than c_current */
                 *smallerPtr = matchIndex;             /* update smaller idx */
                 commonLengthSmaller = matchLength;    /* all smaller will now have at least this guaranteed common length */
                 if (matchIndex <= btLow) { smallerPtr=&dummy32; break; }   /* beyond tree size, stop the search */
                 smallerPtr = nextPtr+1;               /* new "smaller" => larger of match */
-                matchIndex = nextPtr[1];              /* new matchIndex larger than previous (closer to current) */
+                matchIndex = nextPtr[1];              /* new matchIndex larger than previous (closer to c_current) */
             } else {
-                /* match is larger than current */
+                /* match is larger than c_current */
                 *largerPtr = matchIndex;
                 commonLengthLarger = matchLength;
                 if (matchIndex <= btLow) { largerPtr=&dummy32; break; }   /* beyond tree size, stop the search */
@@ -363,12 +364,12 @@ ZSTD_DUBT_findBestMatch(ZSTD_matchState_t* ms,
                     mls, dictMode);
         }
 
-        assert(matchEndIdx > current+8); /* ensure nextToUpdate is increased */
+        assert(matchEndIdx > c_current+8); /* ensure nextToUpdate is increased */
         ms->nextToUpdate = matchEndIdx - 8;   /* skip repetitive patterns */
         if (bestLength >= MINMATCH) {
-            U32 const mIndex = current - ((U32)*offsetPtr - ZSTD_REP_MOVE); (void)mIndex;
+            U32 const mIndex = c_current - ((U32)*offsetPtr - ZSTD_REP_MOVE); (void)mIndex;
             DEBUGLOG(8, "ZSTD_DUBT_findBestMatch(%u) : found match of length %u and offsetCode %u (pos %u)",
-                        current, (U32)bestLength, (U32)*offsetPtr, mIndex);
+                        c_current, (U32)bestLength, (U32)*offsetPtr, mIndex);
         }
         return bestLength;
     }
@@ -493,13 +494,13 @@ size_t ZSTD_HcFindBestMatch_generic (
     const U32 dictLimit = ms->window.dictLimit;
     const BYTE* const prefixStart = base + dictLimit;
     const BYTE* const dictEnd = dictBase + dictLimit;
-    const U32 current = (U32)(ip-base);
+    const U32 c_current = (U32)(ip-base);
     const U32 maxDistance = 1U << cParams->windowLog;
     const U32 lowestValid = ms->window.lowLimit;
-    const U32 withinMaxDistance = (current - lowestValid > maxDistance) ? current - maxDistance : lowestValid;
+    const U32 withinMaxDistance = (c_current - lowestValid > maxDistance) ? c_current - maxDistance : lowestValid;
     const U32 isDictionary = (ms->loadedDictEnd != 0);
     const U32 lowLimit = isDictionary ? lowestValid : withinMaxDistance;
-    const U32 minChain = current > chainSize ? current - chainSize : 0;
+    const U32 minChain = c_current > chainSize ? c_current - chainSize : 0;
     U32 nbAttempts = 1U << cParams->searchLog;
     size_t ml=4-1;
 
@@ -507,24 +508,24 @@ size_t ZSTD_HcFindBestMatch_generic (
     U32 matchIndex = ZSTD_insertAndFindFirstIndex_internal(ms, cParams, ip, mls);
 
     for ( ; (matchIndex>lowLimit) & (nbAttempts>0) ; nbAttempts--) {
-        size_t currentMl=0;
+        size_t c_currentMl=0;
         if ((dictMode != ZSTD_extDict) || matchIndex >= dictLimit) {
             const BYTE* const match = base + matchIndex;
             assert(matchIndex >= dictLimit);   /* ensures this is true if dictMode != ZSTD_extDict */
             if (match[ml] == ip[ml])   /* potentially better */
-                currentMl = ZSTD_count(ip, match, iLimit);
+                c_currentMl = ZSTD_count(ip, match, iLimit);
         } else {
             const BYTE* const match = dictBase + matchIndex;
             assert(match+4 <= dictEnd);
             if (MEM_read32(match) == MEM_read32(ip))   /* assumption : matchIndex <= dictLimit-4 (by table construction) */
-                currentMl = ZSTD_count_2segments(ip+4, match+4, iLimit, dictEnd, prefixStart) + 4;
+                c_currentMl = ZSTD_count_2segments(ip+4, match+4, iLimit, dictEnd, prefixStart) + 4;
         }
 
         /* save best solution */
-        if (currentMl > ml) {
-            ml = currentMl;
-            *offsetPtr = current - matchIndex + ZSTD_REP_MOVE;
-            if (ip+currentMl == iLimit) break; /* best possible, avoids read overflow on next attempt */
+        if (c_currentMl > ml) {
+            ml = c_currentMl;
+            *offsetPtr = c_current - matchIndex + ZSTD_REP_MOVE;
+            if (ip+c_currentMl == iLimit) break; /* best possible, avoids read overflow on next attempt */
         }
 
         if (matchIndex <= minChain) break;
@@ -546,17 +547,17 @@ size_t ZSTD_HcFindBestMatch_generic (
         matchIndex = dms->hashTable[ZSTD_hashPtr(ip, dms->cParams.hashLog, mls)];
 
         for ( ; (matchIndex>dmsLowestIndex) & (nbAttempts>0) ; nbAttempts--) {
-            size_t currentMl=0;
+            size_t c_currentMl=0;
             const BYTE* const match = dmsBase + matchIndex;
             assert(match+4 <= dmsEnd);
             if (MEM_read32(match) == MEM_read32(ip))   /* assumption : matchIndex <= dictLimit-4 (by table construction) */
-                currentMl = ZSTD_count_2segments(ip+4, match+4, iLimit, dmsEnd, prefixStart) + 4;
+                c_currentMl = ZSTD_count_2segments(ip+4, match+4, iLimit, dmsEnd, prefixStart) + 4;
 
             /* save best solution */
-            if (currentMl > ml) {
-                ml = currentMl;
-                *offsetPtr = current - (matchIndex + dmsIndexDelta) + ZSTD_REP_MOVE;
-                if (ip+currentMl == iLimit) break; /* best possible, avoids read overflow on next attempt */
+            if (c_currentMl > ml) {
+                ml = c_currentMl;
+                *offsetPtr = c_current - (matchIndex + dmsIndexDelta) + ZSTD_REP_MOVE;
+                if (ip+c_currentMl == iLimit) break; /* best possible, avoids read overflow on next attempt */
             }
 
             if (matchIndex <= dmsMinChain) break;
@@ -670,7 +671,7 @@ ZSTD_compressBlock_lazy_generic(
         if (offset_1 > maxRep) savedOffset = offset_1, offset_1 = 0;
     }
     if (dictMode == ZSTD_dictMatchState) {
-        /* dictMatchState repCode checks don't currently handle repCode == 0
+        /* dictMatchState repCode checks don't c_currently handle repCode == 0
          * disabling. */
         assert(offset_1 <= dictAndPrefixLength);
         assert(offset_2 <= dictAndPrefixLength);
@@ -817,8 +818,8 @@ _storeSequence:
         /* check immediate repcode */
         if (dictMode == ZSTD_dictMatchState) {
             while (ip <= ilimit) {
-                U32 const current2 = (U32)(ip-base);
-                U32 const repIndex = current2 - offset_2;
+                U32 const c_current2 = (U32)(ip-base);
+                U32 const repIndex = c_current2 - offset_2;
                 const BYTE* repMatch = dictMode == ZSTD_dictMatchState
                     && repIndex < prefixLowestIndex ?
                         dictBase - dictIndexDelta + repIndex :
@@ -950,10 +951,10 @@ size_t ZSTD_compressBlock_lazy_extDict_generic(
         size_t matchLength=0;
         size_t offset=0;
         const BYTE* start=ip+1;
-        U32 current = (U32)(ip-base);
+        U32 c_current = (U32)(ip-base);
 
         /* check repCode */
-        {   const U32 repIndex = (U32)(current+1 - offset_1);
+        {   const U32 repIndex = (U32)(c_current+1 - offset_1);
             const BYTE* const repBase = repIndex < dictLimit ? dictBase : base;
             const BYTE* const repMatch = repBase + repIndex;
             if (((U32)((dictLimit-1) - repIndex) >= 3) & (repIndex > lowestIndex))   /* intentional overflow */
@@ -980,10 +981,10 @@ size_t ZSTD_compressBlock_lazy_extDict_generic(
         if (depth>=1)
         while (ip<ilimit) {
             ip ++;
-            current++;
+            c_current++;
             /* check repCode */
             if (offset) {
-                const U32 repIndex = (U32)(current - offset_1);
+                const U32 repIndex = (U32)(c_current - offset_1);
                 const BYTE* const repBase = repIndex < dictLimit ? dictBase : base;
                 const BYTE* const repMatch = repBase + repIndex;
                 if (((U32)((dictLimit-1) - repIndex) >= 3) & (repIndex > lowestIndex))  /* intentional overflow */
@@ -1010,10 +1011,10 @@ size_t ZSTD_compressBlock_lazy_extDict_generic(
             /* let's find an even better one */
             if ((depth==2) && (ip<ilimit)) {
                 ip ++;
-                current++;
+                c_current++;
                 /* check repCode */
                 if (offset) {
-                    const U32 repIndex = (U32)(current - offset_1);
+                    const U32 repIndex = (U32)(c_current - offset_1);
                     const BYTE* const repBase = repIndex < dictLimit ? dictBase : base;
                     const BYTE* const repMatch = repBase + repIndex;
                     if (((U32)((dictLimit-1) - repIndex) >= 3) & (repIndex > lowestIndex))  /* intentional overflow */
@@ -1113,3 +1114,4 @@ size_t ZSTD_compressBlock_btlazy2_extDict(
 {
     return ZSTD_compressBlock_lazy_extDict_generic(ms, seqStore, rep, src, srcSize, search_binaryTree, 2);
 }
+/* END CSTYLED */

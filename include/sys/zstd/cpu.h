@@ -1,3 +1,4 @@
+/* BEGIN CSTYLED */
 /*
  * Copyright (c) 2018-present, Facebook, Inc.
  * All rights reserved.
@@ -16,13 +17,7 @@
  * https://github.com/facebook/folly/blob/master/folly/CpuId.h
  */
 
-#include <string.h>
-
-#include "mem.h"
-
-#ifdef _MSC_VER
-#include <intrin.h>
-#endif
+#include <sys/zstd/mem.h>
 
 typedef struct {
     U32 f1c;
@@ -36,7 +31,7 @@ MEM_STATIC ZSTD_cpuid_t ZSTD_cpuid(void) {
     U32 f1d = 0;
     U32 f7b = 0;
     U32 f7c = 0;
-#if defined(_MSC_VER) && (defined(_M_X64) || defined(_M_IX86))
+#ifdef _MSC_VER
     int reg[4];
     __cpuid((int*)reg, 0);
     {
@@ -72,7 +67,8 @@ MEM_STATIC ZSTD_cpuid_t ZSTD_cpuid(void) {
           "cpuid\n\t"
           "popl %%ebx\n\t"
           : "=a"(f1a), "=c"(f1c), "=d"(f1d)
-          : "a"(1));
+          : "a"(1)
+          :);
     }
     if (n >= 7) {
       __asm__(
@@ -213,3 +209,4 @@ MEM_STATIC ZSTD_cpuid_t ZSTD_cpuid(void) {
 #undef X
 
 #endif /* ZSTD_COMMON_CPU_H */
+/* END CSTYLED */

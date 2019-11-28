@@ -1,3 +1,4 @@
+/* BEGIN CSTYLED */
 /*
  * Copyright (c) 2016-present, Yann Collet, Facebook, Inc.
  * All rights reserved.
@@ -11,7 +12,7 @@
  /*-*************************************
  *  Dependencies
  ***************************************/
-#include "zstd_compress_sequences.h"
+#include <sys/zstd/zstd_compress_sequences.h>
 
 /**
  * -log2(x / 256) lookup table for x in [0, 256).
@@ -413,3 +414,4 @@ size_t ZSTD_encodeSequences(
                                         CTable_LitLength, llCodeTable,
                                         sequences, nbSeq, longOffsets);
 }
+/* END CSTYLED */

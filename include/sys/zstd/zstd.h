@@ -1,3 +1,4 @@
+/* BEGIN CSTYLED */
 /*
  * Copyright (c) 2016-present, Yann Collet, Facebook, Inc.
  * All rights reserved.
@@ -15,6 +16,9 @@ extern "C" {
 #define ZSTD_H_235446
 
 /* ======   Dependency   ======*/
+#ifndef _KERNEL
+#include <limits.h>   /* INT_MAX */
+#endif
 #include <stddef.h>   /* size_t */
 
 
@@ -1945,3 +1949,4 @@ ZSTDLIB_API size_t ZSTD_insertBlock    (ZSTD_DCtx* dctx, const void* blockStart,
 #if defined (__cplusplus)
 }
 #endif
+/* END CSTYLED */

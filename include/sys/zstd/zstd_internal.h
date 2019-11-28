@@ -1,3 +1,4 @@
+/* BEGIN CSTYLED */
 /*
  * Copyright (c) 2016-present, Yann Collet, Facebook, Inc.
  * All rights reserved.
@@ -19,20 +20,20 @@
 /*-*************************************
 *  Dependencies
 ***************************************/
-#include "compiler.h"
-#include "mem.h"
-#include "debug.h"                 /* assert, DEBUGLOG, RAWLOG, g_debuglevel */
-#include "error_private.h"
+#include <sys/zstd/compiler.h>
+#include <sys/zstd/mem.h>
+#include <sys/zstd/debug.h>                 /* assert, DEBUGLOG, RAWLOG, g_debuglevel */
+#include <sys/zstd/error_private.h>
 #define ZSTD_STATIC_LINKING_ONLY
-#include "zstd.h"
+#include <sys/zstd/zstd.h>
 #define FSE_STATIC_LINKING_ONLY
-#include "fse.h"
+#include <sys/zstd/fse.h>
 #define HUF_STATIC_LINKING_ONLY
-#include "huf.h"
+#include <sys/zstd/huf.h>
 #ifndef XXH_STATIC_LINKING_ONLY
 #  define XXH_STATIC_LINKING_ONLY  /* XXH64_state_t */
 #endif
-#include "xxhash.h"                /* XXH_reset, update, digest */
+#include <sys/zstd/xxhash.h>                /* XXH_reset, update, digest */
 
 #if defined (__cplusplus)
 extern "C" {
@@ -318,24 +319,7 @@ MEM_STATIC U32 ZSTD_highbit32(U32 val)   /* compress, dictBuilder, decodeCorpus 
 {
     assert(val != 0);
     {
-#   if defined(_MSC_VER)   /* Visual */
-        unsigned long r=0;
-        _BitScanReverse(&r, val);
-        return (unsigned)r;
-#   elif defined(__GNUC__) && (__GNUC__ >= 3)   /* GCC Intrinsic */
-        return 31 - __builtin_clz(val);
-#   elif defined(__ICCARM__)    /* IAR Intrinsic */
-        return 31 - __CLZ(val);
-#   else   /* Software version */
-        static const U32 DeBruijnClz[32] = { 0, 9, 1, 10, 13, 21, 2, 29, 11, 14, 16, 18, 22, 25, 3, 30, 8, 12, 20, 28, 15, 17, 24, 7, 19, 27, 23, 6, 26, 5, 4, 31 };
-        U32 v = val;
-        v |= v >> 1;
-        v |= v >> 2;
-        v |= v >> 4;
-        v |= v >> 8;
-        v |= v >> 16;
-        return DeBruijnClz[(v * 0x07C4ACDDU) >> 27];
-#   endif
+        return __builtin_clz (val) ^ 31;
     }
 }
 
@@ -371,3 +355,4 @@ size_t ZSTD_decodeSeqHeaders(ZSTD_DCtx* dctx, int* nbSeqPtr,
 #endif
 
 #endif   /* ZSTD_CCOMMON_H_MODULE */
+/* END CSTYLED */

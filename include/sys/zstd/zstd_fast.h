@@ -1,3 +1,4 @@
+/* BEGIN CSTYLED */
 /*
  * Copyright (c) 2016-present, Yann Collet, Facebook, Inc.
  * All rights reserved.
@@ -35,3 +36,4 @@ size_t ZSTD_compressBlock_fast_extDict(
 #endif
 
 #endif /* ZSTD_FAST_H */
+/* END CSTYLED */

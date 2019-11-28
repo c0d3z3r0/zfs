@@ -1,3 +1,4 @@
+/* BEGIN CSTYLED */
 /*
  * Copyright (c) 2016-present, Yann Collet, Facebook, Inc.
  * All rights reserved.
@@ -45,3 +46,4 @@ size_t ZSTD_encodeSequences(
             seqDef const* sequences, size_t nbSeq, int longOffsets, int bmi2);
 
 #endif /* ZSTD_COMPRESS_SEQUENCES_H */
+/* END CSTYLED */

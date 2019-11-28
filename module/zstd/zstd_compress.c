@@ -1,3 +1,4 @@
+/* BEGIN CSTYLED */
 /*
  * Copyright (c) 2016-present, Yann Collet, Facebook, Inc.
  * All rights reserved.
@@ -11,23 +12,22 @@
 /*-*************************************
 *  Dependencies
 ***************************************/
-#include <limits.h>         /* INT_MAX */
-#include <string.h>         /* memset */
-#include "cpu.h"
-#include "mem.h"
-#include "hist.h"           /* HIST_countFast_wksp */
+#include <sys/zstd/mem.h>
+#include <sys/zstd/cpu.h>
+#include <sys/zstd/mem.h>
+#include <sys/zstd/hist.h>           /* HIST_countFast_wksp */
 #define FSE_STATIC_LINKING_ONLY   /* FSE_encodeSymbol */
-#include "fse.h"
+#include <sys/zstd/fse.h>
 #define HUF_STATIC_LINKING_ONLY
-#include "huf.h"
-#include "zstd_compress_internal.h"
-#include "zstd_compress_sequences.h"
-#include "zstd_compress_literals.h"
-#include "zstd_fast.h"
-#include "zstd_double_fast.h"
-#include "zstd_lazy.h"
-#include "zstd_opt.h"
-#include "zstd_ldm.h"
+#include <sys/zstd/huf.h>
+#include <sys/zstd/zstd_compress_internal.h>
+#include <sys/zstd/zstd_compress_sequences.h>
+#include <sys/zstd/zstd_compress_literals.h>
+#include <sys/zstd/zstd_fast.h>
+#include <sys/zstd/zstd_double_fast.h>
+#include <sys/zstd/zstd_lazy.h>
+#include <sys/zstd/zstd_opt.h>
+#include <sys/zstd/zstd_ldm.h>
 
 
 /*-*************************************
@@ -185,24 +185,6 @@ static ZSTD_CCtx_params ZSTD_makeCCtxParamsFromCParams(
     return cctxParams;
 }
 
-static ZSTD_CCtx_params* ZSTD_createCCtxParams_advanced(
-        ZSTD_customMem customMem)
-{
-    ZSTD_CCtx_params* params;
-    if (!customMem.customAlloc ^ !customMem.customFree) return NULL;
-    params = (ZSTD_CCtx_params*)ZSTD_calloc(
-            sizeof(ZSTD_CCtx_params), customMem);
-    if (!params) { return NULL; }
-    params->customMem = customMem;
-    params->compressionLevel = ZSTD_CLEVEL_DEFAULT;
-    params->fParams.contentSizeFlag = 1;
-    return params;
-}
-
-ZSTD_CCtx_params* ZSTD_createCCtxParams(void)
-{
-    return ZSTD_createCCtxParams_advanced(ZSTD_defaultCMem);
-}
 
 size_t ZSTD_freeCCtxParams(ZSTD_CCtx_params* params)
 {
@@ -2216,10 +2198,10 @@ static size_t ZSTD_buildSeqStore(ZSTD_CCtx* zc, const void* src, size_t srcSize)
     /* limited update after a very long match */
     {   const BYTE* const base = ms->window.base;
         const BYTE* const istart = (const BYTE*)src;
-        const U32 current = (U32)(istart-base);
+        const U32 c_current = (U32)(istart-base);
         if (sizeof(ptrdiff_t)==8) assert(istart - base < (ptrdiff_t)(U32)(-1));   /* ensure no overflow */
-        if (current > ms->nextToUpdate + 384)
-            ms->nextToUpdate = current - MIN(192, (U32)(current - ms->nextToUpdate - 384));
+        if (c_current > ms->nextToUpdate + 384)
+            ms->nextToUpdate = c_current - MIN(192, (U32)(c_current - ms->nextToUpdate - 384));
     }
 
     /* select and store sequences */
@@ -3904,3 +3886,4 @@ ZSTD_parameters ZSTD_getParams(int compressionLevel, unsigned long long srcSizeH
     params.fParams.contentSizeFlag = 1;
     return params;
 }
+/* END CSTYLED */

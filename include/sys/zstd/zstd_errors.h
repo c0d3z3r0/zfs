@@ -1,3 +1,4 @@
+/* BEGIN CSTYLED */
 /*
  * Copyright (c) 2016-present, Yann Collet, Facebook, Inc.
  * All rights reserved.
@@ -18,6 +19,10 @@ extern "C" {
 /*===== dependency =====*/
 #include <stddef.h>   /* size_t */
 
+#define	ZSTD_isError ERR_isError   /* for inlining */
+#define	FSE_isError  ERR_isError
+#define	HUF_isError  ERR_isError
+#define	HIST_isError  ERR_isError
 
 /* =====   ZSTDERRORLIB_API : control library symbols visibility   ===== */
 #ifndef ZSTDERRORLIB_VISIBILITY
@@ -91,3 +96,4 @@ ZSTDERRORLIB_API const char* ZSTD_getErrorString(ZSTD_ErrorCode code);   /**< Sa
 #endif
 
 #endif /* ZSTD_ERRORS_H_398273423 */
+/* END CSTYLED */

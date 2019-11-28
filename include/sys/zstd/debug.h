@@ -1,3 +1,4 @@
+/* BEGIN CSTYLED */
 /* ******************************************************************
    debug
    Part of FSE library
@@ -57,9 +58,9 @@ extern "C" {
 #endif
 
 
-/* static assert is triggered at compile time, leaving no runtime artefact.
- * static assert only works with compile-time constants.
- * Also, this variant can only be used inside a function. */
+/* static assert is triggered at compile time, leaving no runtime artefact,
+ * but can only work with compile-time constants.
+ * This variant can only be used inside a function. */
 #define DEBUG_STATIC_ASSERT(c) (void)sizeof(char[(c) ? 1 : -1])
 
 
@@ -70,19 +71,9 @@ extern "C" {
 #  define DEBUGLEVEL 0
 #endif
 
-
-/* DEBUGFILE can be defined externally,
- * typically through compiler command line.
- * note : currently useless.
- * Value must be stderr or stdout */
-#ifndef DEBUGFILE
-#  define DEBUGFILE stderr
-#endif
-
-
 /* recommended values for DEBUGLEVEL :
- * 0 : release mode, no debug, all run-time checks disabled
- * 1 : enables assert() only, no display
+ * 0 : no debug, all run-time functions disabled
+ * 1 : no display, enables assert() only
  * 2 : reserved, for currently active debug path
  * 3 : events once per object lifetime (CCtx, CDict, etc.)
  * 4 : events once per frame
@@ -91,7 +82,7 @@ extern "C" {
  * 7+: events at every position (*very* verbose)
  *
  * It's generally inconvenient to output traces > 5.
- * In which case, it's possible to selectively trigger high verbosity levels
+ * In which case, it's possible to selectively enable higher verbosity levels
  * by modifying g_debug_level.
  */
 
@@ -105,12 +96,11 @@ extern "C" {
 
 #if (DEBUGLEVEL>=2)
 #  include <stdio.h>
-extern int g_debuglevel; /* the variable is only declared,
-                            it actually lives in debug.c,
-                            and is shared by the whole process.
-                            It's not thread-safe.
-                            It's useful when enabling very verbose levels
-                            on selective conditions (such as position in src) */
+extern int g_debuglevel; /* here, this variable is only declared,
+                           it actually lives in debug.c,
+                           and is shared by the whole process.
+                           It's typically used to enable very verbose levels
+                           on selective conditions (such as position in src) */
 
 #  define RAWLOG(l, ...) {                                      \
                 if (l<=g_debuglevel) {                          \
@@ -132,3 +122,4 @@ extern int g_debuglevel; /* the variable is only declared,
 #endif
 
 #endif /* DEBUG_H_12987983217 */
+/* END CSTYLED */

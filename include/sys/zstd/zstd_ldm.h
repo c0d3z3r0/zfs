@@ -1,3 +1,4 @@
+/* BEGIN CSTYLED */
 /*
  * Copyright (c) 2016-present, Yann Collet, Facebook, Inc.
  * All rights reserved.
@@ -103,3 +104,4 @@ void ZSTD_ldm_adjustParameters(ldmParams_t* params,
 #endif
 
 #endif /* ZSTD_FAST_H */
+/* END CSTYLED */

@@ -1,3 +1,4 @@
+/* BEGIN CSTYLED */
 /*
  * Copyright (c) 2016-present, Yann Collet, Facebook, Inc.
  * All rights reserved.
@@ -65,3 +66,4 @@ size_t ZSTD_compressBlock_btlazy2_extDict(
 #endif
 
 #endif /* ZSTD_LAZY_H */
+/* END CSTYLED */

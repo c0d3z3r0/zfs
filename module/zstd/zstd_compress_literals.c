@@ -1,3 +1,4 @@
+/* BEGIN CSTYLED */
 /*
  * Copyright (c) 2016-present, Yann Collet, Facebook, Inc.
  * All rights reserved.
@@ -11,7 +12,7 @@
  /*-*************************************
  *  Dependencies
  ***************************************/
-#include "zstd_compress_literals.h"
+#include <sys/zstd/zstd_compress_literals.h>
 
 size_t ZSTD_noCompressLiterals (void* dst, size_t dstCapacity, const void* src, size_t srcSize)
 {
@@ -147,3 +148,4 @@ size_t ZSTD_compressLiterals (ZSTD_hufCTables_t const* prevHuf,
     }
     return lhSize+cLitSize;
 }
+/* END CSTYLED */

@@ -1,3 +1,4 @@
+/* BEGIN CSTYLED */
 /*
  * Copyright (c) 2016-present, Yann Collet, Facebook, Inc.
  * All rights reserved.
@@ -533,3 +534,4 @@ MEM_STATIC void ZSTD_cwksp_bump_oversized_duration(
 #endif
 
 #endif /* ZSTD_CWKSP_H */
+/* END CSTYLED */

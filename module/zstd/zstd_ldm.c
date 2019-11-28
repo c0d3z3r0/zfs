@@ -1,3 +1,4 @@
+/* BEGIN CSTYLED */
 /*
  * Copyright (c) 2016-present, Yann Collet, Facebook, Inc.
  * All rights reserved.
@@ -7,11 +8,11 @@
  * in the COPYING file in the root directory of this source tree).
  */
 
-#include "zstd_ldm.h"
+#include <sys/zstd/zstd_ldm.h>
 
-#include "debug.h"
-#include "zstd_fast.h"          /* ZSTD_fillHashTable() */
-#include "zstd_double_fast.h"   /* ZSTD_fillDoubleHashTable() */
+#include <sys/zstd/debug.h>
+#include <sys/zstd/zstd_fast.h>          /* ZSTD_fillHashTable() */
+#include <sys/zstd/zstd_double_fast.h>   /* ZSTD_fillDoubleHashTable() */
 
 #define LDM_BUCKET_SIZE_LOG 3
 #define LDM_MIN_MATCH_LENGTH 64
@@ -231,10 +232,10 @@ static U64 ZSTD_ldm_fillLdmHashTable(ldmState_t* state,
  *  (after a long match, only update tables a limited amount). */
 static void ZSTD_ldm_limitTableUpdate(ZSTD_matchState_t* ms, const BYTE* anchor)
 {
-    U32 const current = (U32)(anchor - ms->window.base);
-    if (current > ms->nextToUpdate + 1024) {
+    U32 const c_current = (U32)(anchor - ms->window.base);
+    if (c_current > ms->nextToUpdate + 1024) {
         ms->nextToUpdate =
-            current - MIN(512, current - ms->nextToUpdate - 1024);
+            c_current - MIN(512, c_current - ms->nextToUpdate - 1024);
     }
 }
 
@@ -271,7 +272,7 @@ static size_t ZSTD_ldm_generateSequences_internal(
 
     while (ip <= ilimit) {
         size_t mLength;
-        U32 const current = (U32)(ip - base);
+        U32 const c_current = (U32)(ip - base);
         size_t forwardMatchLength = 0, backwardMatchLength = 0;
         ldmEntry_t* bestEntry = NULL;
         if (ip != istart) {
@@ -350,7 +351,7 @@ static size_t ZSTD_ldm_generateSequences_internal(
         /* No match found -- continue searching */
         if (bestEntry == NULL) {
             ZSTD_ldm_makeEntryAndInsertByTag(ldmState, rollingHash,
-                                             hBits, current,
+                                             hBits, c_current,
                                              *params);
             ip++;
             continue;
@@ -362,11 +363,11 @@ static size_t ZSTD_ldm_generateSequences_internal(
 
         {
             /* Store the sequence:
-             * ip = current - backwardMatchLength
+             * ip = c_current - backwardMatchLength
              * The match is at (bestEntry->offset - backwardMatchLength)
              */
             U32 const matchIndex = bestEntry->offset;
-            U32 const offset = current - matchIndex;
+            U32 const offset = c_current - matchIndex;
             rawSeq* const seq = rawSeqStore->seq + rawSeqStore->size;
 
             /* Out of sequence storage */
@@ -378,7 +379,7 @@ static size_t ZSTD_ldm_generateSequences_internal(
             rawSeqStore->size++;
         }
 
-        /* Insert the current entry into the hash table */
+        /* Insert the c_current entry into the hash table */
         ZSTD_ldm_makeEntryAndInsertByTag(ldmState, rollingHash, hBits,
                                          (U32)(lastHashed - base),
                                          *params);
@@ -512,7 +513,7 @@ void ZSTD_ldm_skipSequences(rawSeqStore_t* rawSeqStore, size_t srcSize, U32 cons
  * If the sequence length is longer than remaining then the sequence is split
  * between this block and the next.
  *
- * Returns the current sequence to handle, or if the rest of the block should
+ * Returns the c_current sequence to handle, or if the rest of the block should
  * be literals, it returns a sequence with offset == 0.
  */
 static rawSeq maybeSplitSequence(rawSeqStore_t* rawSeqStore,
@@ -595,3 +596,4 @@ size_t ZSTD_ldm_blockCompress(rawSeqStore_t* rawSeqStore,
     /* Compress the last literals */
     return blockCompressor(ms, seqStore, rep, ip, iend - ip);
 }
+/* END CSTYLED */

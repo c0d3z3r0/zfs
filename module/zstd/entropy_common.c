@@ -1,3 +1,4 @@
+/* BEGIN CSTYLED */
 /*
    Common functions of New Generation Entropy library
    Copyright (C) 2016, Yann Collet.
@@ -35,25 +36,12 @@
 /* *************************************
 *  Dependencies
 ***************************************/
-#include "mem.h"
-#include "error_private.h"       /* ERR_*, ERROR */
+#include <sys/zstd/mem.h>
+#include <sys/zstd/error_private.h>       /* ERR_*, ERROR */
 #define FSE_STATIC_LINKING_ONLY  /* FSE_MIN_TABLELOG */
-#include "fse.h"
+#include <sys/zstd/fse.h>
 #define HUF_STATIC_LINKING_ONLY  /* HUF_TABLELOG_ABSOLUTEMAX */
-#include "huf.h"
-
-
-/*===   Version   ===*/
-unsigned FSE_versionNumber(void) { return FSE_VERSION_NUMBER; }
-
-
-/*===   Error Management   ===*/
-unsigned FSE_isError(size_t code) { return ERR_isError(code); }
-const char* FSE_getErrorName(size_t code) { return ERR_getErrorName(code); }
-
-unsigned HUF_isError(size_t code) { return ERR_isError(code); }
-const char* HUF_getErrorName(size_t code) { return ERR_getErrorName(code); }
-
+#include <sys/zstd/huf.h>
 
 /*-**************************************************************
 *  FSE NCount encoding-decoding
@@ -234,3 +222,4 @@ size_t HUF_readStats(BYTE* huffWeight, size_t hwSize, U32* rankStats,
     *nbSymbolsPtr = (U32)(oSize+1);
     return iSize+1;
 }
+/* END CSTYLED */

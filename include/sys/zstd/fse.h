@@ -1,3 +1,4 @@
+/* BEGIN CSTYLED */
 /* ******************************************************************
    FSE : Finite State Entropy codec
    Public Prototypes declaration
@@ -300,7 +301,7 @@ If there is an error, the function will return an error code, which can be teste
 #define FSE_H_FSE_STATIC_LINKING_ONLY
 
 /* *** Dependency *** */
-#include "bitstream.h"
+#include <sys/zstd/bitstream.h>
 
 
 /* *****************************************
@@ -706,3 +707,4 @@ MEM_STATIC unsigned FSE_endOfDState(const FSE_DState_t* DStatePtr)
 #if defined (__cplusplus)
 }
 #endif
+/* END CSTYLED */

@@ -1,3 +1,4 @@
+/* BEGIN CSTYLED */
 /*
  * Copyright (c) 2016-present, Yann Collet, Facebook, Inc.
  * All rights reserved.
@@ -14,18 +15,17 @@
 /*-*******************************************************
 *  Dependencies
 *********************************************************/
-#include <string.h>      /* memcpy, memmove, memset */
-#include "compiler.h"    /* prefetch */
-#include "cpu.h"         /* bmi2 */
-#include "mem.h"         /* low level memory routines */
+#include <sys/zstd/compiler.h>    /* prefetch */
+#include <sys/zstd/cpu.h>         /* bmi2 */
+#include <sys/zstd/mem.h>         /* low level memory routines */
 #define FSE_STATIC_LINKING_ONLY
-#include "fse.h"
+#include <sys/zstd/fse.h>
 #define HUF_STATIC_LINKING_ONLY
-#include "huf.h"
-#include "zstd_internal.h"
-#include "zstd_decompress_internal.h"   /* ZSTD_DCtx */
-#include "zstd_ddict.h"  /* ZSTD_DDictDictContent */
-#include "zstd_decompress_block.h"
+#include <sys/zstd/huf.h>
+#include <sys/zstd/zstd_internal.h>
+#include <sys/zstd/zstd_decompress_internal.h>   /* ZSTD_DCtx */
+#include <sys/zstd/zstd_ddict.h>  /* ZSTD_DDictDictContent */
+#include <sys/zstd/zstd_decompress_block.h>
 
 /*_*******************************************************
 *  Macros
@@ -1323,3 +1323,4 @@ size_t ZSTD_decompressBlock(ZSTD_DCtx* dctx,
     dctx->previousDstEnd = (char*)dst + dSize;
     return dSize;
 }
+/* END CSTYLED */

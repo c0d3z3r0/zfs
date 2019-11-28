@@ -1,3 +1,4 @@
+/* BEGIN CSTYLED */
 /* ******************************************************************
    bitstream
    Part of FSE library
@@ -47,19 +48,14 @@ extern "C" {
 /*-****************************************
 *  Dependencies
 ******************************************/
-#include "mem.h"            /* unaligned access routines */
-#include "debug.h"          /* assert(), DEBUGLOG(), RAWLOG() */
-#include "error_private.h"  /* error codes and messages */
+#include <sys/zstd/mem.h>            /* unaligned access routines */
+#include <sys/zstd/debug.h>          /* assert(), DEBUGLOG(), RAWLOG() */
+#include <sys/zstd/error_private.h>  /* error codes and messages */
 
 
 /*=========================================
 *  Target specific
 =========================================*/
-#if defined(__BMI__) && defined(__GNUC__)
-#  include <immintrin.h>   /* support for bextr (experimental) */
-#elif defined(__ICCARM__)
-#  include <intrinsics.h>
-#endif
 
 #define STREAM_ACCUMULATOR_MIN_32  25
 #define STREAM_ACCUMULATOR_MIN_64  57
@@ -159,27 +155,7 @@ MEM_STATIC unsigned BIT_highbit32 (U32 val)
 {
     assert(val != 0);
     {
-#   if defined(_MSC_VER)   /* Visual */
-        unsigned long r=0;
-        _BitScanReverse ( &r, val );
-        return (unsigned) r;
-#   elif defined(__GNUC__) && (__GNUC__ >= 3)   /* Use GCC Intrinsic */
-        return 31 - __builtin_clz (val);
-#   elif defined(__ICCARM__)    /* IAR Intrinsic */
-        return 31 - __CLZ(val);
-#   else   /* Software version */
-        static const unsigned DeBruijnClz[32] = { 0,  9,  1, 10, 13, 21,  2, 29,
-                                                 11, 14, 16, 18, 22, 25,  3, 30,
-                                                  8, 12, 20, 28, 15, 17, 24,  7,
-                                                 19, 27, 23,  6, 26,  5,  4, 31 };
-        U32 v = val;
-        v |= v >> 1;
-        v |= v >> 2;
-        v |= v >> 4;
-        v |= v >> 8;
-        v |= v >> 16;
-        return DeBruijnClz[ (U32) (v * 0x07C4ACDDU) >> 27];
-#   endif
+        return __builtin_clz (val) ^ 31;
     }
 }
 
@@ -457,3 +433,4 @@ MEM_STATIC unsigned BIT_endOfDStream(const BIT_DStream_t* DStream)
 #endif
 
 #endif /* BITSTREAM_H_MODULE */
+/* END CSTYLED */

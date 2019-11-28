@@ -1,3 +1,4 @@
+/* BEGIN CSTYLED */
 /*
  * Copyright (c) 2016-present, Yann Collet, Facebook, Inc.
  * All rights reserved.
@@ -650,8 +651,8 @@ MEM_STATIC ZSTD_dictMode_e ZSTD_matchState_dictMode(const ZSTD_matchState_t *ms)
 MEM_STATIC U32 ZSTD_window_needOverflowCorrection(ZSTD_window_t const window,
                                                   void const* srcEnd)
 {
-    U32 const current = (U32)((BYTE const*)srcEnd - window.base);
-    return current > ZSTD_CURRENT_MAX;
+    U32 const c_current = (U32)((BYTE const*)srcEnd - window.base);
+    return c_current > ZSTD_CURRENT_MAX;
 }
 
 /**
@@ -687,11 +688,11 @@ MEM_STATIC U32 ZSTD_window_correctOverflow(ZSTD_window_t* window, U32 cycleLog,
      *    windowLog <= 31 ==> 3<<29 + 1<<windowLog < 7<<29 < 1<<32.
      */
     U32 const cycleMask = (1U << cycleLog) - 1;
-    U32 const current = (U32)((BYTE const*)src - window->base);
-    U32 const newCurrent = (current & cycleMask) + maxDist;
-    U32 const correction = current - newCurrent;
+    U32 const c_current = (U32)((BYTE const*)src - window->base);
+    U32 const newCurrent = (c_current & cycleMask) + maxDist;
+    U32 const correction = c_current - newCurrent;
     assert((maxDist & cycleMask) == 0);
-    assert(current > newCurrent);
+    assert(c_current > newCurrent);
     /* Loose bound, should be around 1<<29 (see above) */
     assert(correction > 1<<28);
 
@@ -841,11 +842,11 @@ MEM_STATIC U32 ZSTD_window_update(ZSTD_window_t* window,
     return contiguous;
 }
 
-MEM_STATIC U32 ZSTD_getLowestMatchIndex(const ZSTD_matchState_t* ms, U32 current, unsigned windowLog)
+MEM_STATIC U32 ZSTD_getLowestMatchIndex(const ZSTD_matchState_t* ms, U32 c_current, unsigned windowLog)
 {
     U32    const maxDistance = 1U << windowLog;
     U32    const lowestValid = ms->window.lowLimit;
-    U32    const withinWindow = (current - lowestValid > maxDistance) ? current - maxDistance : lowestValid;
+    U32    const withinWindow = (c_current - lowestValid > maxDistance) ? c_current - maxDistance : lowestValid;
     U32    const isDictionary = (ms->loadedDictEnd != 0);
     U32    const matchLowest = isDictionary ? lowestValid : withinWindow;
     return matchLowest;
@@ -959,3 +960,4 @@ size_t ZSTD_referenceExternalSequences(ZSTD_CCtx* cctx, rawSeq* seq, size_t nbSe
 
 
 #endif /* ZSTD_COMPRESS_H */
+/* END CSTYLED */
