@@ -547,6 +547,11 @@ dmu_objset_open_impl(spa_t *spa, dsl_dataset_t *ds, blkptr_t *bp,
 			}
 			if (err == 0) {
 				err = dsl_prop_register(ds,
+				    zfs_prop_to_name(ZFS_PROP_COMPRESS_LEVEL),
+				    compress_level_changed_cb, os);
+			}
+			if (err == 0) {
+				err = dsl_prop_register(ds,
 				    zfs_prop_to_name(ZFS_PROP_COPIES),
 				    copies_changed_cb, os);
 			}
