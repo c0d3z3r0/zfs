@@ -24,3 +24,4 @@ comment:
 
 ignore:
   - "tests/*/**"		# Don't need Tests to cover themselves
+  - "contrib/zstd/**/*"		# Dependencies don't need coverage testing
