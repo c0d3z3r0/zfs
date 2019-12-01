@@ -837,7 +837,6 @@ kernel_init(int mode)
 	icp_init();
 
 	spa_init((spa_mode_t)mode);
-
 	fletcher_4_init();
 
 	tsd_create(&rrw_tsd_key, rrw_tsd_destroy);
