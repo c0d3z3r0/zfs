@@ -484,8 +484,6 @@ zstd_decompress(void *s_start, void *d_start, size_t s_len, size_t d_len, int n)
 	return (zstd_decompress_level(s_start, d_start, s_len, d_len, NULL));
 }
 
-int zstd_meminit(void);
-
 static void *
 zstd_alloc(void *opaque __unused, size_t size)
 {
