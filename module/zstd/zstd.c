@@ -421,7 +421,7 @@ zstd_decompress_level(void *s_start, void *d_start, size_t s_len, size_t d_len,
 		return (1);
 	}
 
-	if (level != NULL) {
+	if (level) {
 		*level = zstdlevel;
 	}
 
