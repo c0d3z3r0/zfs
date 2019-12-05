@@ -515,7 +515,7 @@ zstd_free(void *opaque __unused, void *ptr)
 	}
 }
 
-static void
+static void __init
 create_fallback_mem(struct zstd_fallback_mem *mem, size_t size)
 {
 	mem->mem_size = size;
@@ -524,7 +524,7 @@ create_fallback_mem(struct zstd_fallback_mem *mem, size_t size)
 }
 
 /* Initialize memory pool barrier mutexes */
-static void
+static void __init
 zstd_mempool_init(void)
 {
 	int i;
@@ -542,7 +542,7 @@ zstd_mempool_init(void)
 	}
 }
 
-static int
+static int __init
 zstd_meminit(void)
 {
 	zstd_mempool_init();
@@ -556,7 +556,7 @@ zstd_meminit(void)
 }
 
 /* Release object from pool and free memory */
-static void
+static void __exit
 release_pool(struct zstd_pool *pool)
 {
 	mutex_enter(&pool->barrier);
@@ -568,7 +568,7 @@ release_pool(struct zstd_pool *pool)
 }
 
 /* Release memory pool objects */
-static void
+static void __exit
 zstd_mempool_deinit(void)
 {
 	int i;
