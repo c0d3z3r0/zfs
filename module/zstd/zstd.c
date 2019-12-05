@@ -171,8 +171,9 @@ zstd_mempool_alloc(struct zstd_pool *zstd_mempool, size_t size)
 	struct zstd_pool *pool;
 	struct zstd_kmem *mem = NULL;
 
-	if (!zstd_mempool)
+	if (!zstd_mempool) {
 		return (NULL);
+	}
 
 	/* Seek for preallocated memory slot and free obsolete slots */
 	for (i = 0; i < ZSTD_POOL_MAX; i++) {
@@ -201,8 +202,9 @@ zstd_mempool_alloc(struct zstd_pool *zstd_mempool, size_t size)
 		}
 	}
 
-	if (mem)
+	if (mem) {
 		return (mem);
+	}
 
 	/* If no preallocated slot was found, try to fill in a new one */
 	for (i = 0; i < ZSTD_POOL_MAX; i++) {
@@ -317,9 +319,11 @@ static enum zio_zstd_levels
 zstd_cookie_to_enum(int32_t level)
 {
 	int i;
-	for (i = 0; i < ARRAYSIZE(fastlevels); i++) {
-		if (fastlevels[i].cookie == level)
+
+	for (i = 0; i < ARRAY_SIZE(fastlevels); i++) {
+		if (fastlevels[i].cookie == level) {
 			return (fastlevels[i].level);
+		}
 	}
 
 	/* This shouldn't happen. Cause a panic. */
@@ -333,7 +337,7 @@ zstd_enum_to_cookie(enum zio_zstd_levels elevel)
 {
 	int i;
 
-	for (i = 0; i < ARRAYSIZE(fastlevels); i++) {
+	for (i = 0; i < ARRAY_SIZE(fastlevels); i++) {
 		if (fastlevels[i].level == elevel)
 			return (fastlevels[i].cookie);
 	}
@@ -445,8 +449,9 @@ zstd_decompress_level(void *s_start, void *d_start, size_t s_len, size_t d_len,
 	}
 
 	dctx = ZSTD_createDCtx_advanced(zstd_dctx_malloc);
-	if (dctx == NULL)
+	if (dctx == NULL) {
 		return (1);
+	}
 
 	result = ZSTD_decompressDCtx(dctx, d_start, d_len,
 	    &src[sizeof (bufsize) + sizeof (levelcookie)], bufsize);
@@ -503,8 +508,9 @@ zstd_dctx_alloc(void *opaque __unused, size_t size)
 	if (!z) {
 		/* Try harder, decompression shall not fail */
 		z = vmem_alloc(nbytes, KM_SLEEP);
-		if (z)
+		if (z) {
 			z->pool = NULL;
+		}
 	} else {
 		return ((void*)z + (sizeof (struct zstd_kmem)));
 	}
