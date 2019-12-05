@@ -157,54 +157,6 @@ static struct zstd_fallback_mem zstd_dctx_fallback;
 static struct zstd_pool *zstd_mempool_cctx;
 static struct zstd_pool *zstd_mempool_dctx;
 
-/* Initialize memory pool barrier mutexes */
-static void
-zstd_mempool_init(void)
-{
-	int i;
-
-	zstd_mempool_cctx = (struct zstd_pool *)
-	    kmem_zalloc(ZSTD_POOL_MAX * sizeof (struct zstd_pool), KM_SLEEP);
-	zstd_mempool_dctx = (struct zstd_pool *)
-	    kmem_zalloc(ZSTD_POOL_MAX * sizeof (struct zstd_pool), KM_SLEEP);
-
-	for (i = 0; i < ZSTD_POOL_MAX; i++) {
-		mutex_init(&zstd_mempool_cctx[i].barrier, NULL,
-		    MUTEX_DEFAULT, NULL);
-		mutex_init(&zstd_mempool_dctx[i].barrier, NULL,
-		    MUTEX_DEFAULT, NULL);
-	}
-}
-
-/* Release object from pool and free memory */
-static void
-release_pool(struct zstd_pool *pool)
-{
-	mutex_enter(&pool->barrier);
-	mutex_exit(&pool->barrier);
-	mutex_destroy(&pool->barrier);
-	kmem_free(pool->mem, pool->size);
-	pool->mem = NULL;
-	pool->size = 0;
-}
-
-/* Release memory pool objects */
-static void
-zstd_mempool_deinit(void)
-{
-	int i;
-
-	for (i = 0; i < ZSTD_POOL_MAX; i++) {
-		release_pool(&zstd_mempool_cctx[i]);
-		release_pool(&zstd_mempool_dctx[i]);
-	}
-
-	kmem_free(zstd_mempool_dctx, ZSTD_POOL_MAX * sizeof (struct zstd_pool));
-	kmem_free(zstd_mempool_cctx, ZSTD_POOL_MAX * sizeof (struct zstd_pool));
-	zstd_mempool_dctx = NULL;
-	zstd_mempool_cctx = NULL;
-}
-
 /*
  * Try to get a cached allocated buffer from memory pool or allocate a new one
  * if neccessary. If a object is older than 2 minutes and does not fit the
@@ -571,6 +523,25 @@ create_fallback_mem(struct zstd_fallback_mem *mem, size_t size)
 	mutex_init(&mem->barrier, NULL, MUTEX_DEFAULT, NULL);
 }
 
+/* Initialize memory pool barrier mutexes */
+static void
+zstd_mempool_init(void)
+{
+	int i;
+
+	zstd_mempool_cctx = (struct zstd_pool *)
+	    kmem_zalloc(ZSTD_POOL_MAX * sizeof (struct zstd_pool), KM_SLEEP);
+	zstd_mempool_dctx = (struct zstd_pool *)
+	    kmem_zalloc(ZSTD_POOL_MAX * sizeof (struct zstd_pool), KM_SLEEP);
+
+	for (i = 0; i < ZSTD_POOL_MAX; i++) {
+		mutex_init(&zstd_mempool_cctx[i].barrier, NULL,
+		    MUTEX_DEFAULT, NULL);
+		mutex_init(&zstd_mempool_dctx[i].barrier, NULL,
+		    MUTEX_DEFAULT, NULL);
+	}
+}
+
 static int
 zstd_meminit(void)
 {
@@ -582,6 +553,35 @@ zstd_meminit(void)
 	    PAGESIZE));
 
 	return (0);
+}
+
+/* Release object from pool and free memory */
+static void
+release_pool(struct zstd_pool *pool)
+{
+	mutex_enter(&pool->barrier);
+	mutex_exit(&pool->barrier);
+	mutex_destroy(&pool->barrier);
+	kmem_free(pool->mem, pool->size);
+	pool->mem = NULL;
+	pool->size = 0;
+}
+
+/* Release memory pool objects */
+static void
+zstd_mempool_deinit(void)
+{
+	int i;
+
+	for (i = 0; i < ZSTD_POOL_MAX; i++) {
+		release_pool(&zstd_mempool_cctx[i]);
+		release_pool(&zstd_mempool_dctx[i]);
+	}
+
+	kmem_free(zstd_mempool_dctx, ZSTD_POOL_MAX * sizeof (struct zstd_pool));
+	kmem_free(zstd_mempool_cctx, ZSTD_POOL_MAX * sizeof (struct zstd_pool));
+	zstd_mempool_dctx = NULL;
+	zstd_mempool_cctx = NULL;
 }
 
 extern int __init
