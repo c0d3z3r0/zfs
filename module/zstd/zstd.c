@@ -380,7 +380,7 @@ zstd_compress(void *s_start, void *d_start, size_t s_len, size_t d_len, int n)
 	 * Out of kernel memory, gently fall through - this will disable
 	 * compression in zio_compress_data
 	 */
-	if (cctx == NULL) {
+	if (!cctx) {
 		return (s_len);
 	}
 
@@ -453,7 +453,7 @@ zstd_decompress_level(void *s_start, void *d_start, size_t s_len, size_t d_len,
 	}
 
 	dctx = ZSTD_createDCtx_advanced(zstd_dctx_malloc);
-	if (dctx == NULL) {
+	if (!dctx) {
 		return (1);
 	}
 
@@ -492,7 +492,7 @@ zstd_alloc(void *opaque __unused, size_t size)
 
 	z = (struct zstd_kmem *)zstd_mempool_alloc(zstd_mempool_cctx, nbytes);
 
-	if (z == NULL) {
+	if (!z) {
 		return (NULL);
 	}
 
@@ -518,7 +518,7 @@ zstd_dctx_alloc(void *opaque __unused, size_t size)
 	}
 
 	/* Fallback if everything fails */
-	if (z == NULL) {
+	if (!z) {
 		/* Barrier since we only can handle it in a single thread */
 		mutex_enter(&zstd_dctx_fallback.barrier);
 		mutex_exit(&zstd_dctx_fallback.barrier);
@@ -528,7 +528,7 @@ zstd_dctx_alloc(void *opaque __unused, size_t size)
 	}
 
 	/* Allocation should always be successful */
-	if (z == NULL) {
+	if (!z) {
 		return (NULL);
 	}
 
