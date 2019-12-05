@@ -574,7 +574,8 @@ create_fallback_mem(struct zstd_fallback_mem *mem, size_t size)
 	mutex_init(&mem->barrier, NULL, MUTEX_DEFAULT, NULL);
 }
 
-int zstd_meminit(void)
+int
+zstd_meminit(void)
 {
 	zstd_mempool_init();
 
