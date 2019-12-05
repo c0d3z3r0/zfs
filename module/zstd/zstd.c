@@ -153,12 +153,12 @@ static int pool_count = 16;
 #define	ZSTD_POOL_MAX		pool_count
 #define	ZSTD_POOL_TIMEOUT	60 * 2
 
-struct zstd_fallback_mem zstd_dctx_fallback;
-struct zstd_pool *zstd_mempool_cctx;
-struct zstd_pool *zstd_mempool_dctx;
+static struct zstd_fallback_mem zstd_dctx_fallback;
+static struct zstd_pool *zstd_mempool_cctx;
+static struct zstd_pool *zstd_mempool_dctx;
 
 /* Initialize memory pool barrier mutexes */
-void
+static void
 zstd_mempool_init(void)
 {
 	int i;
@@ -177,7 +177,7 @@ zstd_mempool_init(void)
 }
 
 /* Release object from pool and free memory */
-void
+static void
 release_pool(struct zstd_pool *pool)
 {
 	mutex_enter(&pool->barrier);
@@ -189,7 +189,7 @@ release_pool(struct zstd_pool *pool)
 }
 
 /* Release memory pool objects */
-void
+static void
 zstd_mempool_deinit(void)
 {
 	int i;
@@ -218,7 +218,7 @@ zstd_mempool_deinit(void)
  *
  * The scheduled release will be updated every time a object is reused.
  */
-void *
+static void *
 zstd_mempool_alloc(struct zstd_pool *zstd_mempool, size_t size)
 {
 	int i;
@@ -311,7 +311,7 @@ zstd_mempool_alloc(struct zstd_pool *zstd_mempool, size_t size)
 /*
  * Mark object as released by releasing the barrier mutex and clear the buffer
  */
-void
+static void
 zstd_mempool_free(struct zstd_kmem *z)
 {
 	struct zstd_pool *pool = z->pool;
@@ -336,7 +336,7 @@ zstd_cookie_to_enum(int32_t level)
 	return (ZIO_ZSTD_LEVEL_DEFAULT);
 }
 
-int32_t
+static int32_t
 zstd_enum_to_cookie(enum zio_zstd_levels elevel)
 {
 	int i;
@@ -486,7 +486,7 @@ zstd_decompress(void *s_start, void *d_start, size_t s_len, size_t d_len, int n)
 
 int zstd_meminit(void);
 
-extern void *
+static void *
 zstd_alloc(void *opaque __unused, size_t size)
 {
 	size_t nbytes = sizeof (struct zstd_kmem) + size;
@@ -501,7 +501,7 @@ zstd_alloc(void *opaque __unused, size_t size)
 	return ((void*)z + (sizeof (struct zstd_kmem)));
 }
 
-extern void *
+static void *
 zstd_dctx_alloc(void *opaque __unused, size_t size)
 {
 	size_t nbytes = sizeof (struct zstd_kmem) + size;
@@ -541,7 +541,7 @@ zstd_dctx_alloc(void *opaque __unused, size_t size)
 }
 
 
-extern void
+static void
 zstd_free(void *opaque __unused, void *ptr)
 {
 	struct zstd_kmem *z = ptr - sizeof (struct zstd_kmem);
@@ -566,7 +566,7 @@ zstd_free(void *opaque __unused, void *ptr)
 	}
 }
 
-void
+static void
 create_fallback_mem(struct zstd_fallback_mem *mem, size_t size)
 {
 	mem->mem_size = size;
@@ -574,7 +574,7 @@ create_fallback_mem(struct zstd_fallback_mem *mem, size_t size)
 	mutex_init(&mem->barrier, NULL, MUTEX_DEFAULT, NULL);
 }
 
-int
+static int
 zstd_meminit(void)
 {
 	zstd_mempool_init();
