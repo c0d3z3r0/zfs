@@ -46,21 +46,12 @@
 #define	printk(fmt, ...)
 #endif
 
-static void *zstd_alloc(void *opaque, size_t size);
-static void *zstd_dctx_alloc(void *opaque, size_t size);
-static void zstd_free(void *opaque, void *ptr);
+/* User space tests compatibility */
+#ifndef _KERNEL
+#define	__init
+#define	__exit
+#endif
 
-static const ZSTD_customMem zstd_malloc = {
-	zstd_alloc,
-	zstd_free,
-	NULL,
-};
-
-static const ZSTD_customMem zstd_dctx_malloc = {
-	zstd_dctx_alloc,
-	zstd_free,
-	NULL,
-};
 /* These enums are index references to zstd_cache_config */
 enum zstd_kmem_type {
 	ZSTD_KMEM_UNKNOWN = 0,
@@ -69,16 +60,6 @@ enum zstd_kmem_type {
 	ZSTD_KMEM_DCTX,
 	ZSTD_KMEM_COUNT,
 };
-/*
- * This variable represents the maximum count of the pool based on the number
- * of CPUs plus some buffer. We default to cpu count * 4, see init_zstd.
- */
-static int pool_count = 16;
-
-#define	ZSTD_POOL_MAX		pool_count
-#define	ZSTD_POOL_TIMEOUT	60 * 2
-
-struct zstd_kmem;
 
 struct zstd_pool {
 	void *mem;
@@ -98,6 +79,79 @@ struct zstd_fallback_mem {
 	void			*mem;
 	kmutex_t 		barrier;
 };
+
+struct levelmap {
+	int32_t cookie;
+	enum zio_zstd_levels level;
+};
+
+static void *zstd_alloc(void *opaque, size_t size);
+static void *zstd_dctx_alloc(void *opaque, size_t size);
+static void zstd_free(void *opaque, void *ptr);
+
+static const ZSTD_customMem zstd_malloc = {
+	zstd_alloc,
+	zstd_free,
+	NULL,
+};
+
+static const ZSTD_customMem zstd_dctx_malloc = {
+	zstd_dctx_alloc,
+	zstd_free,
+	NULL,
+};
+
+static struct levelmap fastlevels[] = {
+	{ZIO_ZSTDLVL_1, ZIO_ZSTDLVL_1},
+	{ZIO_ZSTDLVL_2, ZIO_ZSTDLVL_2},
+	{ZIO_ZSTDLVL_3, ZIO_ZSTDLVL_3},
+	{ZIO_ZSTDLVL_4, ZIO_ZSTDLVL_4},
+	{ZIO_ZSTDLVL_5, ZIO_ZSTDLVL_5},
+	{ZIO_ZSTDLVL_6, ZIO_ZSTDLVL_6},
+	{ZIO_ZSTDLVL_7, ZIO_ZSTDLVL_7},
+	{ZIO_ZSTDLVL_8, ZIO_ZSTDLVL_8},
+	{ZIO_ZSTDLVL_9, ZIO_ZSTDLVL_9},
+	{ZIO_ZSTDLVL_10, ZIO_ZSTDLVL_10},
+	{ZIO_ZSTDLVL_11, ZIO_ZSTDLVL_11},
+	{ZIO_ZSTDLVL_12, ZIO_ZSTDLVL_12},
+	{ZIO_ZSTDLVL_13, ZIO_ZSTDLVL_13},
+	{ZIO_ZSTDLVL_14, ZIO_ZSTDLVL_14},
+	{ZIO_ZSTDLVL_15, ZIO_ZSTDLVL_15},
+	{ZIO_ZSTDLVL_16, ZIO_ZSTDLVL_16},
+	{ZIO_ZSTDLVL_17, ZIO_ZSTDLVL_17},
+	{ZIO_ZSTDLVL_18, ZIO_ZSTDLVL_18},
+	{ZIO_ZSTDLVL_19, ZIO_ZSTDLVL_19},
+	{-1, ZIO_ZSTDLVL_FAST_1},
+	{-2, ZIO_ZSTDLVL_FAST_2},
+	{-3, ZIO_ZSTDLVL_FAST_3},
+	{-4, ZIO_ZSTDLVL_FAST_4},
+	{-5, ZIO_ZSTDLVL_FAST_5},
+	{-6, ZIO_ZSTDLVL_FAST_6},
+	{-7, ZIO_ZSTDLVL_FAST_7},
+	{-8, ZIO_ZSTDLVL_FAST_8},
+	{-9, ZIO_ZSTDLVL_FAST_9},
+	{-10, ZIO_ZSTDLVL_FAST_10},
+	{-20, ZIO_ZSTDLVL_FAST_20},
+	{-30, ZIO_ZSTDLVL_FAST_30},
+	{-40, ZIO_ZSTDLVL_FAST_40},
+	{-50, ZIO_ZSTDLVL_FAST_50},
+	{-60, ZIO_ZSTDLVL_FAST_60},
+	{-70, ZIO_ZSTDLVL_FAST_70},
+	{-80, ZIO_ZSTDLVL_FAST_80},
+	{-90, ZIO_ZSTDLVL_FAST_90},
+	{-100, ZIO_ZSTDLVL_FAST_100},
+	{-500, ZIO_ZSTDLVL_FAST_500},
+	{-1000, ZIO_ZSTDLVL_FAST_1000},
+};
+
+/*
+ * This variable represents the maximum count of the pool based on the number
+ * of CPUs plus some buffer. We default to cpu count * 4, see init_zstd.
+ */
+static int pool_count = 16;
+
+#define	ZSTD_POOL_MAX		pool_count
+#define	ZSTD_POOL_TIMEOUT	60 * 2
 
 struct zstd_fallback_mem zstd_dctx_fallback;
 struct zstd_pool *zstd_mempool_cctx;
@@ -264,56 +318,6 @@ zstd_mempool_free(struct zstd_kmem *z)
 
 	mutex_exit(&pool->barrier);
 }
-
-struct levelmap {
-	int32_t cookie;
-	enum zio_zstd_levels level;
-};
-
-static struct levelmap fastlevels[] = {
-	{ZIO_ZSTDLVL_1, ZIO_ZSTDLVL_1},
-	{ZIO_ZSTDLVL_2, ZIO_ZSTDLVL_2},
-	{ZIO_ZSTDLVL_3, ZIO_ZSTDLVL_3},
-	{ZIO_ZSTDLVL_4, ZIO_ZSTDLVL_4},
-	{ZIO_ZSTDLVL_5, ZIO_ZSTDLVL_5},
-	{ZIO_ZSTDLVL_6, ZIO_ZSTDLVL_6},
-	{ZIO_ZSTDLVL_7, ZIO_ZSTDLVL_7},
-	{ZIO_ZSTDLVL_8, ZIO_ZSTDLVL_8},
-	{ZIO_ZSTDLVL_9, ZIO_ZSTDLVL_9},
-	{ZIO_ZSTDLVL_10, ZIO_ZSTDLVL_10},
-	{ZIO_ZSTDLVL_11, ZIO_ZSTDLVL_11},
-	{ZIO_ZSTDLVL_12, ZIO_ZSTDLVL_12},
-	{ZIO_ZSTDLVL_13, ZIO_ZSTDLVL_13},
-	{ZIO_ZSTDLVL_14, ZIO_ZSTDLVL_14},
-	{ZIO_ZSTDLVL_15, ZIO_ZSTDLVL_15},
-	{ZIO_ZSTDLVL_16, ZIO_ZSTDLVL_16},
-	{ZIO_ZSTDLVL_17, ZIO_ZSTDLVL_17},
-	{ZIO_ZSTDLVL_18, ZIO_ZSTDLVL_18},
-	{ZIO_ZSTDLVL_19, ZIO_ZSTDLVL_19},
-	{-1, ZIO_ZSTDLVL_FAST_1},
-	{-2, ZIO_ZSTDLVL_FAST_2},
-	{-3, ZIO_ZSTDLVL_FAST_3},
-	{-4, ZIO_ZSTDLVL_FAST_4},
-	{-5, ZIO_ZSTDLVL_FAST_5},
-	{-6, ZIO_ZSTDLVL_FAST_6},
-	{-7, ZIO_ZSTDLVL_FAST_7},
-	{-8, ZIO_ZSTDLVL_FAST_8},
-	{-9, ZIO_ZSTDLVL_FAST_9},
-	{-10, ZIO_ZSTDLVL_FAST_10},
-	{-20, ZIO_ZSTDLVL_FAST_20},
-	{-30, ZIO_ZSTDLVL_FAST_30},
-	{-40, ZIO_ZSTDLVL_FAST_40},
-	{-50, ZIO_ZSTDLVL_FAST_50},
-	{-60, ZIO_ZSTDLVL_FAST_60},
-	{-70, ZIO_ZSTDLVL_FAST_70},
-	{-80, ZIO_ZSTDLVL_FAST_80},
-	{-90, ZIO_ZSTDLVL_FAST_90},
-	{-100, ZIO_ZSTDLVL_FAST_100},
-	{-500, ZIO_ZSTDLVL_FAST_500},
-	{-1000, ZIO_ZSTDLVL_FAST_1000},
-};
-
-#define	ARRAYSIZE(array) sizeof (array) / sizeof (array[0])
 
 static enum zio_zstd_levels
 zstd_cookie_to_enum(int32_t level)
@@ -561,12 +565,6 @@ zstd_free(void *opaque __unused, void *ptr)
 		break;
 	}
 }
-
-/* User space tests compatibility */
-#ifndef _KERNEL
-#define	__init
-#define	__exit
-#endif
 
 void
 create_fallback_mem(struct zstd_fallback_mem *mem, size_t size)
