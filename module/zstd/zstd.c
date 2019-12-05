@@ -331,6 +331,7 @@ zstd_cookie_to_enum(int32_t level)
 	/* This shouldn't happen. Cause a panic. */
 	printk(KERN_ERR "%s:Invalid ZSTD level encountered: %d",
 	    __func__, level);
+
 	return (ZIO_ZSTD_LEVEL_DEFAULT);
 }
 
@@ -589,6 +590,7 @@ zstd_init(void)
 	/* Set pool size by using maximum sane thread count * 4 */
 	pool_count = boot_ncpus * 4;
 	zstd_meminit();
+
 	return (0);
 }
 
