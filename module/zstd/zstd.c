@@ -223,21 +223,22 @@ zstd_mempool_alloc(struct zstd_pool *zstd_mempool, size_t size)
 
 				/* Allocation successfull? */
 				if (pool->mem) {
-					/*
-					 * Keep track for later release and
-					 * update timestamp
-					 */
+					/* Keep track for later release */
 					mem->pool = pool;
 					pool->size = size;
-					pool->timeout = gethrestime_sec() +
-					    ZSTD_POOL_TIMEOUT;
 					mem->kmem_type = ZSTD_KMEM_POOL;
 					mem->kmem_size = size;
 				} else {
 					mutex_exit(&pool->barrier);
 				}
+			}
 
-				return (mem);
+			if (size <= pool->size) {
+				/* Update timestamp */
+				pool->timeout = gethrestime_sec() +
+				    ZSTD_POOL_TIMEOUT;
+
+				return (pool->mem);
 			}
 
 			mutex_exit(&pool->barrier);
