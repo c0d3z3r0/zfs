@@ -314,9 +314,7 @@ zstd_mempool_alloc(struct zstd_pool *zstd_mempool, size_t size)
 static void
 zstd_mempool_free(struct zstd_kmem *z)
 {
-	struct zstd_pool *pool = z->pool;
-
-	mutex_exit(&pool->barrier);
+	mutex_exit(&z->pool->barrier);
 }
 
 static enum zio_zstd_levels
