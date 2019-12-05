@@ -493,7 +493,7 @@ zstd_dctx_alloc(void *opaque __unused, size_t size)
 static void
 zstd_free(void *opaque __unused, void *ptr)
 {
-	struct zstd_kmem *z = ptr - sizeof (struct zstd_kmem);
+	struct zstd_kmem *z = (ptr - sizeof (struct zstd_kmem));
 	enum zstd_kmem_type type;
 
 	ASSERT3U(z->kmem_type, <, ZSTD_KMEM_COUNT);
@@ -588,7 +588,7 @@ extern int __init
 zstd_init(void)
 {
 	/* Set pool size by using maximum sane thread count * 4 */
-	pool_count = boot_ncpus * 4;
+	pool_count = (boot_ncpus * 4);
 	zstd_meminit();
 
 	return (0);
