@@ -29,6 +29,7 @@
  * Copyright (c) 2016, OmniTI Computer Consulting Inc. All rights reserved.
  * Copyright (c) 2017, Nexenta Systems Inc. All rights reserved.
  * Copyright (c) 2019, Klara Inc. All rights reserved.
+ * Copyright (c) 2019, Allan Jude. All rights reserved.
  * Use is subject to license terms.
  */
 
