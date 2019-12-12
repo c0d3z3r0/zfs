@@ -98,7 +98,6 @@ AC_CONFIG_FILES([
 	contrib/pyzfs/setup.py
 	contrib/zcp/Makefile
 	contrib/zstd/Makefile
-	contrib/zstd/Makefile
 	contrib/zstd/common/Makefile
 	contrib/zstd/compress/Makefile
 	contrib/zstd/decompress/Makefile
@@ -156,6 +155,7 @@ AC_CONFIG_FILES([
 	lib/libzfs/libzfs_core.pc
 	lib/libzfs_core/Makefile
 	lib/libzpool/Makefile
+	lib/libzstd/Makefile
 	lib/libzutil/Makefile
 	man/Makefile
 	man/man1/Makefile

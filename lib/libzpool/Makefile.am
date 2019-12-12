@@ -5,10 +5,6 @@ VPATH = \
 	$(top_srcdir)/module/zcommon \
 	$(top_srcdir)/module/lua \
 	$(top_srcdir)/module/os/linux/zfs \
-	$(top_srcdir)/contrib/zstd/common \
-	$(top_srcdir)/contrib/zstd/compress \
-	$(top_srcdir)/contrib/zstd/decompress \
-	$(top_srcdir)/module/zstd \
 	$(top_srcdir)/lib/libzpool
 
 # Suppress unused but set variable warnings often due to ASSERTs
@@ -17,17 +13,7 @@ AM_CFLAGS += $(NO_UNUSED_BUT_SET_VARIABLE)
 # Includes kernel code generate warnings for large stack frames
 AM_CFLAGS += $(FRAME_LARGER_THAN)
 
-# frame-larger-than=20480 is needed here due to requirements of the stock zstd
-AM_CFLAGS += -DLIB_ZPOOL_BUILD -Wframe-larger-than=20480
-
-DEFAULT_INCLUDES += \
-	-I$(top_srcdir)/include \
-	-I$(top_srcdir)/lib/libspl/include \
-	-I$(top_srcdir)/contrib/zstd \
-	-I$(top_srcdir)/contrib/zstd/common \
-	-I$(top_srcdir)/contrib/zstd/compress \
-	-I$(top_srcdir)/contrib/zstd/decompress \
-	-I$(top_srcdir)/lib/libspl/include/sys/zstd
+AM_CFLAGS += -DLIB_ZPOOL_BUILD
 
 lib_LTLIBRARIES = libzpool.la
 
@@ -175,29 +161,6 @@ KERNEL_C = \
 	zrlock.c \
 	zthr.c
 
-ZSTD_C = \
-	zstd_common.c \
-	fse_decompress.c \
-	entropy_common.c \
-	xxhash.c \
-	hist.c \
-	error_private.c \
-	zstd_compress.c \
-	zstd_compress_literals.c \
-	zstd_compress_sequences.c \
-	fse_compress.c \
-	huf_compress.c \
-	zstd_double_fast.c \
-	zstd_fast.c \
-	zstd_lazy.c \
-	zstd_ldm.c \
-	zstd_opt.c \
-	zstd_ddict.c \
-	zstd_decompress.c \
-	zstd_decompress_block.c \
-	huf_decompress.c \
-	zstd.c
-
 LUA_C = \
 	lapi.c \
 	lauxlib.c \
@@ -227,14 +190,14 @@ LUA_C = \
 nodist_libzpool_la_SOURCES = \
 	$(USER_C) \
 	$(KERNEL_C) \
-	$(LUA_C) \
-	$(ZSTD_C)
+	$(LUA_C)
 
 libzpool_la_LIBADD = \
 	$(top_builddir)/lib/libicp/libicp.la \
 	$(top_builddir)/lib/libnvpair/libnvpair.la \
 	$(top_builddir)/lib/libunicode/libunicode.la \
-	$(top_builddir)/lib/libzutil/libzutil.la
+	$(top_builddir)/lib/libzutil/libzutil.la \
+	$(top_builddir)/lib/libzstd/libzstd.la
 
 libzpool_la_LIBADD += $(ZLIB) -ldl
 libzpool_la_LDFLAGS = -pthread -version-info 2:0:0
