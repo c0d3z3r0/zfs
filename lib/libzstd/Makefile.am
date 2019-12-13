@@ -7,9 +7,6 @@ VPATH = \
 	$(top_srcdir)/contrib/zstd/decompress \
 	$(top_srcdir)/module/zstd
 
-# Quiet warnings about frame size due to unused code in unmodified zstd lib
-AM_CFLAGS += -Wframe-larger-than=18000
-
 DEFAULT_INCLUDES += \
 	-I$(top_srcdir)/contrib/zstd \
 	-I$(top_srcdir)/contrib/zstd/common \
