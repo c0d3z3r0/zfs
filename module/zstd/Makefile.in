@@ -46,8 +46,6 @@ $(MODULE)-objs += $(ZSTD_PATH)/decompress/zstd_decompress.o
 $(MODULE)-objs += $(ZSTD_PATH)/decompress/zstd_decompress_block.o
 $(MODULE)-objs += $(ZSTD_PATH)/decompress/huf_decompress.o
 
-CFLAGS_zstd_decompress_block.o	:= -fno-tree-vectorize
-
 # Quiet warnings about frame size due to unused code in unmodified zstd lib
 CFLAGS_hist.o	:= -Wframe-larger-than=20480
 CFLAGS_huf_compress.o	:= -Wframe-larger-than=20480
