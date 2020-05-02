@@ -9,6 +9,9 @@ endif
 # libzutil depends on libefi if present
 SUBDIRS += libzutil libunicode
 
+# zstd intermediary build component
+SUBDIRS += libzstd
+
 # These four libraries, which are installed as the final build product,
 # incorporate the six convenience libraries given above.
 SUBDIRS += libuutil libnvpair libzpool libzfs_core libzfs
