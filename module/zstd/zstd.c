@@ -335,6 +335,9 @@ zstd_compress(void *s_start, void *d_start, size_t s_len, size_t d_len,
 	/* Set the compression level */
 	ZSTD_CCtx_setParameter(cctx, ZSTD_c_compressionLevel, levelcookie);
 
+	/* Use the "magicless" zstd header which saves us 4 header bytes */
+	ZSTD_CCtx_setParameter(cctx, ZSTD_c_format, ZSTD_f_zstd1_magicless);
+
 	/*
 	 * Disable redundant checksum calculation and content size storage since
 	 * this is already done by ZFS itself.
@@ -399,6 +402,9 @@ zstd_decompress_level(void *s_start, void *d_start, size_t s_len, size_t d_len,
 	if (!dctx) {
 		return (1);
 	}
+
+	/* Set header type to "magicless" */
+	ZSTD_DCtx_setParameter(dctx, ZSTD_d_format, ZSTD_f_zstd1_magicless);
 
 	result = ZSTD_decompressDCtx(dctx, d_start, d_len,
 	    &src[sizeof (bufsize) + sizeof (levelcookie)], bufsize);
