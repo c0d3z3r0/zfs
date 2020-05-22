@@ -40,6 +40,9 @@
 
 /* FreeBSD compatibility */
 #if defined(__FreeBSD__) && defined(_KERNEL)
+
+MALLOC_DEFINE(M_ZSTD, "zstd", "ZSTD Compressor");
+
 #define	KERN_ERR
 #define	printk dprintf
 
