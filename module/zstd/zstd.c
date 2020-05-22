@@ -34,9 +34,7 @@
 #include <sys/zstd/zstd.h>
 
 #define	ZSTD_STATIC_LINKING_ONLY
-#include <zstd.h>
-#include <zstd_errors.h>
-#include <error_private.h>
+#include "zstdlib.h"
 
 /* FreeBSD compatibility */
 #if defined(__FreeBSD__) && defined(_KERNEL)
