@@ -1,4 +1,5 @@
 COMMON_H = \
+	$(top_srcdir)/include/sys/zstd/aarch64_compat.h \
 	$(top_srcdir)/include/sys/zstd/limits.h \
 	$(top_srcdir)/include/sys/zstd/stddef.h \
 	$(top_srcdir)/include/sys/zstd/stdint.h \
