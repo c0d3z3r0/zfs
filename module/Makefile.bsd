@@ -388,3 +388,4 @@ CFLAGS.zio_checksum.c= -Wno-missing-prototypes
 CFLAGS.zle.c= -Wno-missing-prototypes
 CFLAGS.zrlock.c= -Wno-missing-prototypes -Wno-cast-qual
 CFLAGS.zstd.c= -Wno-missing-prototypes -Wno-cast-qual -Wno-pointer-arith
+CFLAGS.zstdlib.c= -fno-tree-vectorize
