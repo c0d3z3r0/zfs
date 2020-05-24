@@ -36,50 +36,15 @@
 extern "C" {
 #endif
 
-#ifdef _KERNEL
-
-#if defined(__FreeBSD__)
-
-#include <sys/malloc.h>
-
-MALLOC_DECLARE(M_ZSTD);
-
-#undef	malloc
-#define	malloc(x)	(malloc)((x), M_ZSTD, M_WAITOK)
-#define	free(x)		(free)((x), M_ZSTD)
-#define	calloc(a, b)	(mallocarray)((a), (b), M_ZSTD, M_WAITOK | M_ZERO)
-
-#elif defined(__linux__)
-
-//#include <linux/slab.h>
-
 #undef	GCC_VERSION
 
-// TODO fix malloc*; this currently breaks build
 /*
-#define	malloc(sz)	kmalloc(sz, GFP_KERNEL | __GFP_NOFAIL)
-#define	free(ptr)	kfree(ptr)
-#define	calloc(n, sz)	kzalloc((n) * (sz), GFP_KERNEL | __GFP_NOFAIL)
-*/
-extern void *spl_kmem_alloc(size_t sz, int fl, const char *func, int line);
-extern void *spl_kmem_zalloc(size_t sz, int fl, const char *func, int line);
-extern void spl_kmem_free(const void *ptr, size_t sz);
-#define	KM_SLEEP	0x0000  /* can block for memory; success guaranteed */
-#define	KM_NOSLEEP	0x0001  /* cannot block for memory; may fail */
-#define	KM_ZERO		0x1000  /* zero the allocation */
-#undef malloc
-#define	malloc(sz)	spl_kmem_alloc((sz), KM_SLEEP, __func__, __LINE__)
-#define	free(ptr)	spl_kmem_free((ptr), 0)
-#define	calloc(n, sz)	\
-    spl_kmem_zalloc((n) * (sz), KM_SLEEP, __func__, __LINE__)
-
-#else
-#error "Unsupported platform"
-#endif
-
-#else /* !_KERNEL */
-#include_next <stdlib.h>	/* malloc, calloc, free */
-#endif /* _KERNEL */
+ * Define calloc, malloc, free to make building work. They are never really used
+ * in zstdlib.c since allocation is done in zstd.c.
+ */
+#define	calloc(n, sz)	NULL
+#define	malloc(sz)	NULL
+#define	free(ptr)
 
 #ifdef __cplusplus
 }

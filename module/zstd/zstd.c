@@ -36,11 +36,6 @@
 #define	ZSTD_STATIC_LINKING_ONLY
 #include "zstdlib.h"
 
-/* FreeBSD compatibility */
-#if defined(__FreeBSD__) && defined(_KERNEL)
-MALLOC_DEFINE(M_ZSTD, "zstd", "ZSTD Compressor");
-#endif
-
 /* User space compatibility */
 #ifndef _KERNEL
 #define	__init
