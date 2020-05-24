@@ -38,21 +38,14 @@
 
 /* FreeBSD compatibility */
 #if defined(__FreeBSD__) && defined(_KERNEL)
-
 MALLOC_DEFINE(M_ZSTD, "zstd", "ZSTD Compressor");
-
-#define	KERN_ERR
-#define	printk dprintf
-
-/* for userspace compile, we disable error debugging */
-#elif !defined(_KERNEL)
-#define	printk(fmt, ...)
 #endif
 
-/* User space tests compatibility */
+/* User space compatibility */
 #ifndef _KERNEL
 #define	__init
 #define	__exit
+#define	printk(fmt, ...)
 #endif
 
 /* These enums are index references to zstd_cache_config */

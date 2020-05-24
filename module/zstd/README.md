@@ -11,7 +11,7 @@ Tree structure:
 * `zstd.c` is the actual `zzstd` kernel module.
 * `zstdlib.[hc]` is the unmodified, [_"amalgamated"_](https://github.com/facebook/zstd/blob/dev/contrib/single_file_libs/README.md)
 	version of the `Zstandard` library, generated from our template `zstdlib-in.c`.
-* `include`: This directory contains supplemental includes for FreeBSD
+* `include`: This directory contains supplemental includes for platform
 	compatibility, which are not expected to be used by ZFS elsewhere in the
 	future. Thus we keep them private to ZSTD.
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014-2019 Allan Jude <allanjude@freebsd.org>
+ * BSD 2-Clause License (http://www.opensource.org/licenses/bsd-license.php)
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -21,40 +21,37 @@
  * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
- *
  */
 
-#ifndef _ZSTD_FREEBSD_STDLIB_H_
-#define	_ZSTD_FREEBSD_STDLIB_H_
+/*
+ * Copyright (c) 2014-2019, Allan Jude. All rights reserved.
+ * Copyright (c) 2020, Brian Behlendorf. All rights reserved.
+ * Copyright (c) 2020, Michael Niewöhner. All rights reserved.
+ */
 
-#ifdef _KERNEL
-#include <sys/param.h>  /* size_t */
+#ifndef	_ZSTD_STDDEF_H
+#define	_ZSTD_STDDEF_H
+
+#ifdef __cplusplus
+extern "C" {
 #endif
 
-#if defined(__FreeBSD__) && defined(_KERNEL)
+#ifdef _KERNEL
 
-#include <sys/malloc.h>
-MALLOC_DECLARE(M_ZSTD);
-#undef malloc
-#define	malloc(x)	(malloc)((x), M_ZSTD, M_WAITOK)
-#define	free(x)		(free)((x), M_ZSTD)
-#define	calloc(a, b)	(mallocarray)((a), (b), M_ZSTD, M_WAITOK | M_ZERO)
+#if defined(__FreeBSD__)
+#include <sys/types.h>
+#elif defined(__linux__)
+#include <linux/types.h>
+#else
+#error "Unsupported platform"
+#endif
 
-#elif defined(__linux__) && defined(_KERNEL)
-
-#undef	GCC_VERSION
-extern void *spl_kmem_alloc(size_t sz, int fl, const char *func, int line);
-extern void *spl_kmem_zalloc(size_t sz, int fl, const char *func, int line);
-extern void spl_kmem_free(const void *ptr, size_t sz);
-#define	KM_SLEEP	0x0000  /* can block for memory; success guaranteed */
-#define	KM_NOSLEEP	0x0001  /* cannot block for memory; may fail */
-#define	KM_ZERO		0x1000  /* zero the allocation */
-#undef malloc
-#define	malloc(sz)	spl_kmem_alloc((sz), KM_SLEEP, __func__, __LINE__)
-#define	free(ptr)	spl_kmem_free((ptr), 0)
-#define	calloc(n, sz)	\
-    spl_kmem_zalloc((n) * (sz), KM_SLEEP, __func__, __LINE__)
-
+#else /* !_KERNEL */
+#include_next <stddef.h>
 #endif /* _KERNEL */
 
-#endif /* _ZSTD_FREEBSD_STDLIB_H_ */
+#ifdef __cplusplus
+}
+#endif
+
+#endif /* _ZSTD_STDDEF_H */
