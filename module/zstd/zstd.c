@@ -36,12 +36,22 @@
 #define	ZSTD_STATIC_LINKING_ONLY
 #include "zstdlib.h"
 
+#ifdef _KERNEL
+
+/* FreeBSD compatibility */
+#if defined(__FreeBSD__)
+#define	KERN_ERR
+#define	printk  dprintf
+#endif
+
 /* User space compatibility */
-#ifndef _KERNEL
+#else /* !_KERNEL */
 #define	__init
 #define	__exit
-#define	printk(fmt, ...)
-#endif
+#define	KERN_ERR
+#define	printk  dprintf
+
+#endif /* _KERNEL */
 
 /* These enums are index references to zstd_cache_config */
 enum zstd_kmem_type {

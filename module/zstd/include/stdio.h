@@ -36,20 +36,10 @@
 extern "C" {
 #endif
 
-#ifdef _KERNEL
+#ifndef _KERNEL
 
-#if defined(__FreeBSD__)
-#define	KERN_ERR
-#define	printk	dprintf
-#elif defined(__linux__)
-#define	printf	dprintf
-#else
-#error "Unsupported platform"
-#endif
-
-#else /* !_KERNEL */
 #include_next <stdio.h>
-#define	printk(fmt, ...)
+
 #endif /* _KERNEL */
 
 #ifdef __cplusplus
