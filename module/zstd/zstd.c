@@ -166,7 +166,6 @@ static struct zstd_pool *zstd_mempool_dctx;
 static void *
 zstd_mempool_alloc(struct zstd_pool *zstd_mempool, size_t size)
 {
-	int i;
 	struct zstd_pool *pool;
 	struct zstd_kmem *mem = NULL;
 
@@ -175,7 +174,7 @@ zstd_mempool_alloc(struct zstd_pool *zstd_mempool, size_t size)
 	}
 
 	/* Seek for preallocated memory slot and free obsolete slots */
-	for (i = 0; i < ZSTD_POOL_MAX; i++) {
+	for (int i = 0; i < ZSTD_POOL_MAX; i++) {
 		pool = &zstd_mempool[i];
 		if (mutex_tryenter(&pool->barrier)) {
 			/*
@@ -206,7 +205,7 @@ zstd_mempool_alloc(struct zstd_pool *zstd_mempool, size_t size)
 	}
 
 	/* If no preallocated slot was found, try to fill in a new one */
-	for (i = 0; i < ZSTD_POOL_MAX; i++) {
+	for (int i = 0; i < ZSTD_POOL_MAX; i++) {
 		pool = &zstd_mempool[i];
 		if (mutex_tryenter(&pool->barrier)) {
 			/* Object is free, try to allocate new one */
@@ -263,9 +262,7 @@ zstd_mempool_free(struct zstd_kmem *z)
 static enum zio_zstd_levels
 zstd_cookie_to_enum(int32_t level)
 {
-	int i;
-
-	for (i = 0; i < ARRAY_SIZE(fastlevels); i++) {
+	for (int i = 0; i < ARRAY_SIZE(fastlevels); i++) {
 		if (fastlevels[i].cookie == level) {
 			return (fastlevels[i].level);
 		}
@@ -281,9 +278,7 @@ zstd_cookie_to_enum(int32_t level)
 static int32_t
 zstd_enum_to_cookie(enum zio_zstd_levels elevel)
 {
-	int i;
-
-	for (i = 0; i < ARRAY_SIZE(fastlevels); i++) {
+	for (int i = 0; i < ARRAY_SIZE(fastlevels); i++) {
 		if (fastlevels[i].level == elevel)
 			return (fastlevels[i].cookie);
 	}
@@ -521,14 +516,12 @@ create_fallback_mem(struct zstd_fallback_mem *mem, size_t size)
 static void __init
 zstd_mempool_init(void)
 {
-	int i;
-
 	zstd_mempool_cctx = (struct zstd_pool *)
 	    kmem_zalloc(ZSTD_POOL_MAX * sizeof (struct zstd_pool), KM_SLEEP);
 	zstd_mempool_dctx = (struct zstd_pool *)
 	    kmem_zalloc(ZSTD_POOL_MAX * sizeof (struct zstd_pool), KM_SLEEP);
 
-	for (i = 0; i < ZSTD_POOL_MAX; i++) {
+	for (int i = 0; i < ZSTD_POOL_MAX; i++) {
 		mutex_init(&zstd_mempool_cctx[i].barrier, NULL,
 		    MUTEX_DEFAULT, NULL);
 		mutex_init(&zstd_mempool_dctx[i].barrier, NULL,
@@ -572,9 +565,7 @@ release_pool(struct zstd_pool *pool)
 static void __exit
 zstd_mempool_deinit(void)
 {
-	int i;
-
-	for (i = 0; i < ZSTD_POOL_MAX; i++) {
+	for (int i = 0; i < ZSTD_POOL_MAX; i++) {
 		release_pool(&zstd_mempool_cctx[i]);
 		release_pool(&zstd_mempool_dctx[i]);
 	}
