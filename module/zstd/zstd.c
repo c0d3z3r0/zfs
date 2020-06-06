@@ -57,20 +57,20 @@ enum zstd_kmem_type {
 struct zstd_pool {
 	void *mem;
 	size_t size;
-	kmutex_t 		barrier;
+	kmutex_t barrier;
 	hrtime_t timeout;
 };
 
 struct zstd_kmem {
-	enum zstd_kmem_type	kmem_type;
-	size_t			kmem_size;
-	struct zstd_pool	*pool;
+	enum zstd_kmem_type kmem_type;
+	size_t kmem_size;
+	struct zstd_pool *pool;
 };
 
 struct zstd_fallback_mem {
-	size_t			mem_size;
-	void			*mem;
-	kmutex_t 		barrier;
+	size_t mem_size;
+	void *mem;
+	kmutex_t barrier;
 };
 
 struct levelmap {
