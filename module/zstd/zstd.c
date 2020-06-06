@@ -152,14 +152,14 @@ static struct zstd_pool *zstd_mempool_dctx;
 
 /*
  * Try to get a cached allocated buffer from memory pool or allocate a new one
- * if neccessary. If a object is older than 2 minutes and does not fit the
+ * if necessary. If a object is older than 2 minutes and does not fit the
  * requested size, it will be released and a new cached entry will be allocated.
- * If other pooled objects are detected without beeing used for 2 minutes, they
+ * If other pooled objects are detected without being used for 2 minutes, they
  * will be released, too.
  *
  * The concept is that high frequency memory allocations of bigger objects are
- * expensive. So if alot of work is going on, allocations will be kept for a
- * while and can be reused in that timeframe.
+ * expensive. So if a lot of work is going on, allocations will be kept for a
+ * while and can be reused in that time frame.
  *
  * The scheduled release will be updated every time a object is reused.
  */
@@ -213,7 +213,6 @@ zstd_mempool_alloc(struct zstd_pool *zstd_mempool, size_t size)
 				mem = vmem_alloc(size, KM_SLEEP);
 				pool->mem = mem;
 
-				/* Allocation successfull? */
 				if (pool->mem) {
 					/* Keep track for later release */
 					mem->pool = pool;
