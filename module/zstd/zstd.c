@@ -565,8 +565,14 @@ zstd_meminit(void)
 static void __exit
 release_pool(struct zstd_pool *pool)
 {
+	/*
+	 * Barrier to prevent a possible use after free.
+	 * We have to wait until this object is not in use anymore before
+	 * releasing it.
+	 */
 	mutex_enter(&pool->barrier);
 	mutex_exit(&pool->barrier);
+
 	mutex_destroy(&pool->barrier);
 	kmem_free(pool->mem, pool->size);
 	pool->mem = NULL;
