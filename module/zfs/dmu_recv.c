@@ -532,13 +532,17 @@ recv_begin_check_feature_flags_impl(uint64_t featureflags, spa_t *spa)
 		return (SET_ERROR(ENOTSUP));
 
 	/*
-	 * LZ4 compressed, embedded, mooched, large blocks, and large_dnodes
-	 * in the stream can only be used if those pool features are enabled
-	 * because we don't attempt to decompress / un-embed / un-mooch /
-	 * split up the blocks / dnodes during the receive process.
+	 * LZ4 compressed, ZSTD compressed, embedded, mooched, large blocks,
+	 * and large_dnodes in the stream can only be used if those pool
+	 * features are enabled because we don't attempt to decompress /
+	 * un-embed / un-mooch / split up the blocks / dnodes during the
+	 * receive process.
 	 */
 	if ((featureflags & DMU_BACKUP_FEATURE_LZ4) &&
 	    !spa_feature_is_enabled(spa, SPA_FEATURE_LZ4_COMPRESS))
+		return (SET_ERROR(ENOTSUP));
+	if ((featureflags & DMU_BACKUP_FEATURE_ZSTD) &&
+	    !spa_feature_is_enabled(spa, SPA_FEATURE_ZSTD_COMPRESS))
 		return (SET_ERROR(ENOTSUP));
 	if ((featureflags & DMU_BACKUP_FEATURE_EMBED_DATA) &&
 	    !spa_feature_is_enabled(spa, SPA_FEATURE_EMBEDDED_DATA))
@@ -609,13 +613,6 @@ dmu_recv_begin_check(void *arg, dmu_tx_t *tx)
 	} else {
 		dsflags |= DS_HOLD_FLAG_DECRYPT;
 	}
-
-	if ((featureflags & DMU_BACKUP_FEATURE_ZSTD) &&
-	    !spa_feature_is_enabled(dp->dp_spa, SPA_FEATURE_ZSTD_COMPRESS))
-		return (SET_ERROR(ENOTSUP));
-
-	if (!(DMU_STREAM_SUPPORTED(featureflags)))
-		return (SET_ERROR(ENOTSUP));
 
 	error = dsl_dataset_hold_flags(dp, tofs, dsflags, FTAG, &ds);
 	if (error == 0) {
