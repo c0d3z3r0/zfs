@@ -163,6 +163,9 @@ enum zio_encrypt {
 	(compress) == ZIO_COMPRESS_ON ||		\
 	(compress) == ZIO_COMPRESS_OFF)
 
+#define	ZIO_COMPLEVEL_ZSTD(level) \
+	(ZIO_COMPRESS_ZSTD | ((level) << SPA_COMPRESSBITS))
+
 #define	ZIO_FAILURE_MODE_WAIT		0
 #define	ZIO_FAILURE_MODE_CONTINUE	1
 #define	ZIO_FAILURE_MODE_PANIC		2
