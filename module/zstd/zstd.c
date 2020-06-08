@@ -176,6 +176,15 @@ zstd_mempool_alloc(struct zstd_pool *zstd_mempool, size_t size)
 	/* Seek for preallocated memory slot and free obsolete slots */
 	for (int i = 0; i < ZSTD_POOL_MAX; i++) {
 		pool = &zstd_mempool[i];
+		/*
+		 * This lock is simply a marker for a pool object beeing in use.
+		 * If it's already hold, it will be skipped.
+		 *
+		 * We need to create it before checking it to avoid race
+		 * conditions caused by running in a threaded context.
+		 *
+		 * The lock is later released by zstd_mempool_free.
+		 */
 		if (mutex_tryenter(&pool->barrier)) {
 			/*
 			 * Check if objects fits the size, if so we take it and
@@ -188,7 +197,7 @@ zstd_mempool_alloc(struct zstd_pool *zstd_mempool, size_t size)
 				continue;
 			}
 
-			/* Free memory if object is older than 2 minutes */
+			/* Free memory if unused object older than 2 minutes */
 			if (pool->mem && gethrestime_sec() > pool->timeout) {
 				kmem_free(pool->mem, pool->size);
 				pool->mem = NULL;
@@ -204,7 +213,14 @@ zstd_mempool_alloc(struct zstd_pool *zstd_mempool, size_t size)
 		return (mem);
 	}
 
-	/* If no preallocated slot was found, try to fill in a new one */
+	/*
+	 * If no preallocated slot was found, try to fill in a new one.
+	 *
+	 * We run a similar algorithm twice here to avoid pool fragmentation.
+	 * The first one may generate holes in the list if objects get released.
+	 * We always make sure that these holes get filled instead of adding new
+	 * allocations constantly at the end.
+	 */
 	for (int i = 0; i < ZSTD_POOL_MAX; i++) {
 		pool = &zstd_mempool[i];
 		if (mutex_tryenter(&pool->barrier)) {
@@ -457,10 +473,15 @@ zstd_dctx_alloc(void *opaque __maybe_unused, size_t size)
 
 	/* Fallback if everything fails */
 	if (!z) {
-		/* Barrier since we only can handle it in a single thread */
+		/*
+		 * Barrier since we only can handle it in a single thread. All
+		 * other following threads need to wait here until decompression
+		 * is completed. zstd_free will release this barrier later.
+		 */
 		mutex_enter(&zstd_dctx_fallback.barrier);
 		mutex_exit(&zstd_dctx_fallback.barrier);
 		mutex_enter(&zstd_dctx_fallback.barrier);
+
 		z = zstd_dctx_fallback.mem;
 		type = ZSTD_KMEM_DCTX;
 	}

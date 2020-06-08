@@ -133,9 +133,14 @@ zfs_prop_init(void)
 		/*
 		 * ZSTD 1-19 are synthetic. We store the compression level in a
 		 * separate hidden property to avoid wasting a large amount of
-		 * space in the ZIO_COMPRESS enum. We do not need to know the
-		 * compression level at decompress time, so it does not need
-		 * to be stored on disk in the block pointer.
+		 * space in the ZIO_COMPRESS enum.
+		 *
+		 * The compression level is also stored within the header of the
+		 * compressed block since we may need it for later recompression
+		 * to avoid checksum errors (L2ARC).
+		 *
+		 * Note that the level here is defined as bit shifted mask on
+		 * top of the method.
 		 */
 		{ "zstd-1",	ZIO_COMPRESS_ZSTD |
 		    (ZIO_ZSTD_LEVEL_1 << SPA_COMPRESSBITS) },
