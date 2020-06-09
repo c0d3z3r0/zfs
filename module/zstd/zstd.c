@@ -42,18 +42,19 @@
 #define	printk  dprintf
 #endif
 
-/* These enums are index references to zstd_cache_config */
+/* Enums describing the allocator type specified by kmem_type in zstd_kmem */
 enum zstd_kmem_type {
 	ZSTD_KMEM_UNKNOWN = 0,
-	/* allocation type using kmem_vmalloc */
+	/* Allocation type using kmem_vmalloc */
 	ZSTD_KMEM_DEFAULT,
-	/* pool based allocation using mempool_alloc */
+	/* Pool based allocation using mempool_alloc */
 	ZSTD_KMEM_POOL,
-	/* reserved fallback memory for decompression only */
+	/* Reserved fallback memory for decompression only */
 	ZSTD_KMEM_DCTX,
 	ZSTD_KMEM_COUNT,
 };
 
+/* Structure for pooled memory objects */
 struct zstd_pool {
 	void *mem;
 	size_t size;
@@ -61,12 +62,14 @@ struct zstd_pool {
 	hrtime_t timeout;
 };
 
+/* Global structure for handling memory allocations */
 struct zstd_kmem {
 	enum zstd_kmem_type kmem_type;
 	size_t kmem_size;
 	struct zstd_pool *pool;
 };
 
+/* Fallback memory structure used for decompression only if memory runs out */
 struct zstd_fallback_mem {
 	size_t mem_size;
 	void *mem;
@@ -78,23 +81,34 @@ struct levelmap {
 	enum zio_zstd_levels level;
 };
 
+/*
+ * ZSTD memory handlers
+ *
+ * For decompression we use a different handler which also provides fallback
+ * memory allocation in case memory runs out.
+ *
+ * The ZSTD handlers were split up for the most simplified implementation.
+ */
 static void *zstd_alloc(void *opaque, size_t size);
 static void *zstd_dctx_alloc(void *opaque, size_t size);
 static void zstd_free(void *opaque, void *ptr);
 
+/* Compression memory handler */
 static const ZSTD_customMem zstd_malloc = {
 	zstd_alloc,
 	zstd_free,
 	NULL,
 };
 
+/* Decompression memory handler */
 static const ZSTD_customMem zstd_dctx_malloc = {
 	zstd_dctx_alloc,
 	zstd_free,
 	NULL,
 };
 
-static struct levelmap fastlevels[] = {
+/* Level map for converting ZFS internal levels to ZSTD levels and vice versa */
+static struct levelmap zstd_levels[] = {
 	{ZIO_ZSTD_LEVEL_1, ZIO_ZSTD_LEVEL_1},
 	{ZIO_ZSTD_LEVEL_2, ZIO_ZSTD_LEVEL_2},
 	{ZIO_ZSTD_LEVEL_3, ZIO_ZSTD_LEVEL_3},
@@ -277,9 +291,9 @@ zstd_mempool_free(struct zstd_kmem *z)
 static enum zio_zstd_levels
 zstd_cookie_to_enum(int32_t level)
 {
-	for (int i = 0; i < ARRAY_SIZE(fastlevels); i++) {
-		if (fastlevels[i].cookie == level) {
-			return (fastlevels[i].level);
+	for (int i = 0; i < ARRAY_SIZE(zstd_levels); i++) {
+		if (zstd_levels[i].cookie == level) {
+			return (zstd_levels[i].level);
 		}
 	}
 
@@ -293,9 +307,9 @@ zstd_cookie_to_enum(int32_t level)
 static int32_t
 zstd_enum_to_cookie(enum zio_zstd_levels elevel)
 {
-	for (int i = 0; i < ARRAY_SIZE(fastlevels); i++) {
-		if (fastlevels[i].level == elevel)
-			return (fastlevels[i].cookie);
+	for (int i = 0; i < ARRAY_SIZE(zstd_levels); i++) {
+		if (zstd_levels[i].level == elevel)
+			return (zstd_levels[i].cookie);
 	}
 
 	/* This shouldn't happen. Fall back to the default level. */
