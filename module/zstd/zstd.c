@@ -207,7 +207,7 @@ zstd_mempool_alloc(struct zstd_pool *zstd_mempool, size_t size)
 
 			/* Free memory if unused object older than 2 minutes */
 			if (pool->mem && gethrestime_sec() > pool->timeout) {
-				kmem_free(pool->mem, pool->size);
+				vmem_free(pool->mem, pool->size);
 				pool->mem = NULL;
 				pool->size = 0;
 				pool->timeout = 0;
@@ -534,7 +534,7 @@ zstd_free(void *opaque __maybe_unused, void *ptr)
 	type = z->kmem_type;
 	switch (type) {
 	case ZSTD_KMEM_DEFAULT:
-		kmem_free(z, z->kmem_size);
+		vmem_free(z, z->kmem_size);
 		break;
 	case ZSTD_KMEM_POOL:
 		zstd_mempool_free(z);
@@ -579,7 +579,10 @@ zstd_meminit(void)
 {
 	zstd_mempool_init();
 
-	/* Estimate the size of the fallback decompression context */
+	/*
+	 * Estimate the size of the fallback decompression context.
+	 * The expected size on x64 with current ZSTD should be about 160 KB.
+	 */
 	create_fallback_mem(&zstd_dctx_fallback,
 	    P2ROUNDUP(ZSTD_estimateDCtxSize() + sizeof (struct zstd_kmem),
 	    PAGESIZE));
@@ -592,7 +595,7 @@ static void __exit
 release_pool(struct zstd_pool *pool)
 {
 	mutex_destroy(&pool->barrier);
-	kmem_free(pool->mem, pool->size);
+	vmem_free(pool->mem, pool->size);
 	pool->mem = NULL;
 	pool->size = 0;
 }
@@ -625,7 +628,7 @@ zstd_init(void)
 extern void __exit
 zstd_fini(void)
 {
-	kmem_free(zstd_dctx_fallback.mem, zstd_dctx_fallback.mem_size);
+	vmem_free(zstd_dctx_fallback.mem, zstd_dctx_fallback.mem_size);
 	mutex_destroy(&zstd_dctx_fallback.barrier);
 	zstd_mempool_deinit();
 }
