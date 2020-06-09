@@ -479,8 +479,6 @@ zstd_dctx_alloc(void *opaque __maybe_unused, size_t size)
 		 * is completed. zstd_free will release this barrier later.
 		 */
 		mutex_enter(&zstd_dctx_fallback.barrier);
-		mutex_exit(&zstd_dctx_fallback.barrier);
-		mutex_enter(&zstd_dctx_fallback.barrier);
 
 		z = zstd_dctx_fallback.mem;
 		type = ZSTD_KMEM_DCTX;
@@ -567,14 +565,6 @@ zstd_meminit(void)
 static void __exit
 release_pool(struct zstd_pool *pool)
 {
-	/*
-	 * Barrier to prevent a possible use after free.
-	 * We have to wait until this object is not in use anymore before
-	 * releasing it.
-	 */
-	mutex_enter(&pool->barrier);
-	mutex_exit(&pool->barrier);
-
 	mutex_destroy(&pool->barrier);
 	kmem_free(pool->mem, pool->size);
 	pool->mem = NULL;
