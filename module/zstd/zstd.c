@@ -36,12 +36,6 @@
 #define	ZSTD_STATIC_LINKING_ONLY
 #include "zstdlib.h"
 
-/* FreeBSD compatibility */
-#if defined(_KERNEL) && defined(__FreeBSD__)
-#define	KERN_ERR
-#define	printk  dprintf
-#endif
-
 /* Enums describing the allocator type specified by kmem_type in zstd_kmem */
 enum zstd_kmem_type {
 	ZSTD_KMEM_UNKNOWN = 0,
