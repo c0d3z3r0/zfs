@@ -281,35 +281,37 @@ zstd_mempool_free(struct zstd_kmem *z)
 	mutex_exit(&z->pool->barrier);
 }
 
-/* Convert internal stored zfs level enum to zstd level */
-static enum zio_zstd_levels
-zstd_cookie_to_enum(int32_t level)
+/* Convert ZFS internal, stored level to ZSTD level */
+static int
+zstd_cookie_to_enum(int16_t cookie, enum zio_zstd_levels *level)
 {
 	for (int i = 0; i < ARRAY_SIZE(zstd_levels); i++) {
-		if (zstd_levels[i].cookie == level) {
-			return (zstd_levels[i].level);
+		if (zstd_levels[i].cookie == cookie) {
+			*level = zstd_levels[i].level;
+			return (0);
 		}
 	}
 
-	/* This shouldn't happen. Fall back to the default level. */
-	printk(KERN_ERR "%s:Invalid ZSTD level encountered: %d",
-	    __func__, level);
-	return (ZIO_ZSTD_LEVEL_DEFAULT);
+	/*
+	 * Invalid/unknown ZSTD level
+	 * This should never happen and is a strong indicator for corruption.
+	 */
+	return (1);
 }
 
-/* Convert zstd_level to internal stored zfs level */
-static int32_t
-zstd_enum_to_cookie(enum zio_zstd_levels elevel)
+/* Convert ZSTD level to ZFS internal, stored level */
+static int
+zstd_enum_to_cookie(enum zio_zstd_levels level, int16_t *cookie)
 {
 	for (int i = 0; i < ARRAY_SIZE(zstd_levels); i++) {
-		if (zstd_levels[i].level == elevel)
+		if (zstd_levels[i].level == level) {
+			*cookie = zstd_levels[i].cookie;
 			return (zstd_levels[i].cookie);
+		}
 	}
 
-	/* This shouldn't happen. Fall back to the default level. */
-	printk(KERN_ERR "%s:Invalid ZSTD enum level encountered: %d",
-	    __func__, elevel);
-	return (ZIO_ZSTD_LEVEL_DEFAULT);
+	/* Invalid/unknown ZSTD level - this should never happen. */
+	return (1);
 }
 
 /* Compress block using zstd */
@@ -319,11 +321,15 @@ zstd_compress(void *s_start, void *d_start, size_t s_len, size_t d_len,
 {
 	size_t c_len;
 	uint32_t bufsize;
-	int32_t levelcookie;
+	int16_t levelcookie;
 	char *dest = d_start;
 	ZSTD_CCtx *cctx;
 
-	levelcookie = zstd_enum_to_cookie(level);
+	/* Skip compression if the specified level is invalid */
+	if (zstd_enum_to_cookie(level, &levelcookie)) {
+		return (s_len);
+	}
+
 	ASSERT3U(d_len, >=, sizeof (bufsize));
 	ASSERT3U(d_len, <=, s_len);
 	ASSERT3U(levelcookie, !=, 0);
@@ -389,12 +395,21 @@ int
 zstd_decompress_level(void *s_start, void *d_start, size_t s_len, size_t d_len,
     uint8_t *level)
 {
-	const char *src = s_start;
 	ZSTD_DCtx *dctx;
 	size_t result;
+	enum zio_zstd_levels zstdlevel;
+
+	const char *src = s_start;
 	uint32_t bufsize = BE_IN32(src);
-	int32_t levelcookie = (int32_t)BE_IN32(&src[sizeof (bufsize)]);
-	uint8_t zstdlevel = zstd_cookie_to_enum(levelcookie);
+	int32_t levelcookie = (int32_t) BE_IN32(&src[sizeof (bufsize)]);
+
+	/*
+	 * Invalid level
+	 * This is a strong indicator for data corruption! Return an error.
+	 */
+	if (zstd_cookie_to_enum(levelcookie, &zstdlevel)) {
+		return (1);
+	}
 
 	ASSERT3U(d_len, >=, s_len);
 	ASSERT3U(zstdlevel, !=, ZIO_COMPLEVEL_INHERIT);
