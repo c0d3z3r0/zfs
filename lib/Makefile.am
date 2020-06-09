@@ -1,6 +1,6 @@
 # NB: GNU Automake Manual, Chapter 8.3.5: Libtool Convenience Libraries
-# These six libraries are intermediary build components.
-SUBDIRS = libavl libicp libshare libspl libtpool
+# These seven libraries are intermediary build components.
+SUBDIRS = libavl libicp libshare libspl libtpool libzstd
 
 if BUILD_LINUX
 SUBDIRS += libefi
