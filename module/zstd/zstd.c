@@ -281,24 +281,6 @@ zstd_mempool_free(struct zstd_kmem *z)
 	mutex_exit(&z->pool->barrier);
 }
 
-/* Convert ZFS internal, stored level to ZSTD level */
-static int
-zstd_cookie_to_enum(int16_t cookie, enum zio_zstd_levels *level)
-{
-	for (int i = 0; i < ARRAY_SIZE(zstd_levels); i++) {
-		if (zstd_levels[i].cookie == cookie) {
-			*level = zstd_levels[i].level;
-			return (0);
-		}
-	}
-
-	/*
-	 * Invalid/unknown ZSTD level
-	 * This should never happen and is a strong indicator for corruption.
-	 */
-	return (1);
-}
-
 /* Convert ZSTD level to ZFS internal, stored level */
 static int
 zstd_enum_to_cookie(enum zio_zstd_levels level, int16_t *cookie)
@@ -420,14 +402,14 @@ zstd_decompress_level(void *s_start, void *d_start, size_t s_len, size_t d_len,
 	 * We ignore the ZSTD version for now. As soon as incompatibilities
 	 * occurr, it has to be read and handled accordingly.
 	 */
-	levelcookie = (int16_t) (BE_IN32(&src[sizeof (bufsize)]) & 0xFFFF);
+	zstdlevel = (uint16_t) (BE_IN32(&src[sizeof (bufsize)]) & 0xFFFF);
 	//version = (int16_t) (BE_IN32(&src[sizeof (bufsize)]) >> 16);
 
 	/*
 	 * Invalid level
 	 * This is a strong indicator for data corruption! Return an error.
 	 */
-	if (zstd_cookie_to_enum(levelcookie, &zstdlevel)) {
+	if (zstd_enum_to_cookie(zstdlevel, &levelcookie)) {
 		return (1);
 	}
 
