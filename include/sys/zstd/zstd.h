@@ -39,7 +39,7 @@ int zstd_init(void);
 void zstd_fini(void);
 
 size_t zstd_compress(void *s_start, void *d_start, size_t s_len, size_t d_len,
-    int n);
+    int level);
 int zstd_get_level(void *s_start, size_t s_len, uint8_t *level);
 int zstd_decompress_level(void *s_start, void *d_start, size_t s_len,
     size_t d_len, uint8_t *level);
