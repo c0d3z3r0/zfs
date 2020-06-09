@@ -392,18 +392,19 @@ zstd_decompress_level(void *s_start, void *d_start, size_t s_len, size_t d_len,
 	size_t result;
 	enum zio_zstd_levels zstdlevel;
 	int16_t levelcookie;
-	//int16_t version;
+	// int16_t version;
 
 	const char *src = s_start;
 	uint32_t bufsize = BE_IN32(src);
 
+	/* Read the level cookie */
+	zstdlevel = (uint16_t)(BE_IN32(&src[sizeof (bufsize)]) & 0xFFFF);
+
 	/*
-	 * Read the level cookie.
 	 * We ignore the ZSTD version for now. As soon as incompatibilities
 	 * occurr, it has to be read and handled accordingly.
 	 */
-	zstdlevel = (uint16_t) (BE_IN32(&src[sizeof (bufsize)]) & 0xFFFF);
-	//version = (int16_t) (BE_IN32(&src[sizeof (bufsize)]) >> 16);
+	// version = (int16_t)(BE_IN32(&src[sizeof (bufsize)]) >> 16);
 
 	/*
 	 * Invalid level
