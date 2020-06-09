@@ -36,16 +36,6 @@
 #define	ZSTD_STATIC_LINKING_ONLY
 #include "zstdlib.h"
 
-/*
- * This specifies a incremental version of the ZSTD format to be able to ensure
- * data integrity compatiblity since new versions might enhance the compression
- * algorithm in a way, where the compressed data will change.
- *
- * As soon as such incompatibility occurs, this version needs to be increased
- * and handling code needs to be added, differentiating between the versions.
- */
-#define	ZSTD_VERSION	0
-
 /* Enums describing the allocator type specified by kmem_type in zstd_kmem */
 enum zstd_kmem_type {
 	ZSTD_KMEM_UNKNOWN = 0,
@@ -396,12 +386,17 @@ zstd_compress(void *s_start, void *d_start, size_t s_len, size_t d_len,
 	 * Encode the actual level, so if the enum changes in the future, we
 	 * will be compatible.
 	 *
-	 * The upper 16 bits store the ZSTD format version to ensure
-	 * compatibility with future ZSTD enhancements which may cause a
-	 * difference of compressed data.
+	 * The upper 16 bits store the ZSTD version to be able to provide
+	 * future compatibility, since new versions might enhance the
+	 * compression algorithm in a way, where the compressed data will
+	 * change.
+	 *
+	 * As soon as such incompatibility occurs, handling code needs to be
+	 * added, differentiating between the versions.
 	 */
+	ASSERT3U(ZSTD_VERSION_NUMBER, <=, 0xFFFF);
 	*(uint32_t *)(&dest[sizeof (bufsize)]) =
-	    BE_32(levelcookie | (ZSTD_VERSION << 16));
+	    BE_32(level | (ZSTD_VERSION_NUMBER << 16));
 
 	return (c_len + sizeof (bufsize) + (sizeof (levelcookie) * 2));
 }
