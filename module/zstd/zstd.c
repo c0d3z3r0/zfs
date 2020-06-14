@@ -36,30 +36,6 @@
 #define	ZSTD_STATIC_LINKING_ONLY
 #include "zstdlib.h"
 
-/*
- * ZSTD block header
- * NOTE: all fields in this header are in big endian order.
- */
-struct zstd_header {
-	/* Compressed size of data */
-	uint32_t c_len;
-
-	/*
-	 * Version and compression level
-	 * We have to choose a union here to handle endian conversation
-	 * correctly, since the version and level is bitmask encoded.
-	 */
-	union {
-		uint32_t raw_version_level;
-		struct {
-			uint32_t version : 24;
-			uint8_t level;
-		};
-	};
-
-	char data[];
-};
-
 /* Enums describing the allocator type specified by kmem_type in zstd_kmem */
 enum zstd_kmem_type {
 	ZSTD_KMEM_UNKNOWN = 0,

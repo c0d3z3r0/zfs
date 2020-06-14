@@ -34,6 +34,30 @@
 extern "C" {
 #endif
 
+/*
+ * ZSTD block header
+ * NOTE: all fields in this header are in big endian order.
+ */
+typedef struct zfs_zstd_header {
+	/* Compressed size of data */
+	uint32_t c_len;
+
+	/*
+	 * Version and compression level
+	 * We have to choose a union here to handle endian conversation
+	 * correctly, since the version and level is bitmask encoded.
+	 */
+	union {
+		uint32_t raw_version_level;
+		struct {
+			uint32_t version : 24;
+			uint8_t level;
+		};
+	};
+
+	char data[];
+} zfs_zstdhdr_t;
+
 /* (de)init for user space / kernel emulation */
 int zstd_init(void);
 void zstd_fini(void);
