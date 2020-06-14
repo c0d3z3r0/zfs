@@ -208,6 +208,15 @@ zfs_prop_init(void)
 		    ZIO_COMPLEVEL_ZSTD(ZIO_ZSTD_LEVEL_FAST_500) },
 		{ "zstd-fast-1000",
 		    ZIO_COMPLEVEL_ZSTD(ZIO_ZSTD_LEVEL_FAST_1000) },
+#ifdef DEBUG
+		/* Levels for testing only */
+		{ "zstd-kmem-test-1",
+		    ZIO_COMPLEVEL_ZSTD(ZIO_ZSTD_KMEM_TEST_1) },
+		{ "zstd-kmem-test-2",
+		    ZIO_COMPLEVEL_ZSTD(ZIO_ZSTD_KMEM_TEST_2) },
+		{ "zstd-kmem-test-3",
+		    ZIO_COMPLEVEL_ZSTD(ZIO_ZSTD_KMEM_TEST_3) },
+#endif /* DEBUG */
 		{ NULL }
 	};
 
