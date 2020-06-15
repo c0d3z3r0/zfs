@@ -29,8 +29,8 @@
  * Copyright (c) 2017, Joyent, Inc. All rights reserved.
  * Copyright (c) 2017, Datto Inc. All rights reserved.
  * Copyright (c) 2017, Intel Corporation. All rights reserved.
- * Copyright (c) 2019, Allan Jude. All rights reserved.
- * Copyright (c) 2019, Klara Inc. All rights reserved.
+ * Copyright (c) 2019, Allan Jude.
+ * Copyright (c) 2019, Klara Inc.
  * Use is subject to license terms.
  */
 

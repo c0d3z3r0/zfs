@@ -21,8 +21,8 @@
  */
 
 /*
- * Copyright (c) 2016-2018, Klara Systems Inc. All rights reserved.
- * Copyright (c) 2016-2018, Allan Jude. All rights reserved.
+ * Copyright (c) 2016-2018, Klara Inc.
+ * Copyright (c) 2016-2018, Allan Jude.
  * Copyright (c) 2018-2019, Sebastian Gottschall. All rights reserved.
  * Copyright (c) 2019-2020, Michael Niewöhner. All rights reserved.
  */
