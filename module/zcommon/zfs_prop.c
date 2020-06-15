@@ -425,7 +425,7 @@ zfs_prop_init(void)
 	    "on | off | lzjb | gzip | gzip-[1-9] | zle | lz4 | "
 	    "zstd | zstd-[1-19] | "
 #ifdef DEBUG
-	    "zstd-kmem-test[1-3] | "
+	    "zstd-kmem-test-[1-3] | "
 #endif /* DEBUG */
 	    "zstd-fast-[1-10,20,30,40,50,60,70,80,90,100,500,1000]",
 	    "COMPRESS", compress_table);
