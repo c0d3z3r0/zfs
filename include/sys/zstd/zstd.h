@@ -44,8 +44,9 @@ typedef struct zfs_zstd_header {
 
 	/*
 	 * Version and compression level
-	 * We have to choose a union here to handle endian conversation
-	 * correctly, since the version and level is bitmask encoded.
+	 * We use a union to be able to big endian encode a single 32 bit
+	 * unsigned integer, but still access the individual bitmasked
+	 * components easily.
 	 */
 	union {
 		uint32_t raw_version_level;
