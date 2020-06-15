@@ -187,10 +187,8 @@ static int pool_count = 16;
 static struct zstd_fallback_mem zstd_dctx_fallback;
 static struct zstd_pool *zstd_mempool_cctx;
 static struct zstd_pool *zstd_mempool_dctx;
-static int __init zstd_meminit(void);
 
 #ifdef DEBUG
-int mem_init_done = 0;
 uint8_t test_level = 0;
 #endif /* DEBUG */
 
@@ -358,7 +356,6 @@ zstd_compress(void *s_start, void *d_start, size_t s_len, size_t d_len,
 #ifdef DEBUG
 	test_level = level;
 	level = ZIO_ZSTD_LEVEL_1;
-	zstd_meminit();
 #endif /* DEBUG */
 
 	hdr = (struct zstd_header *)d_start;
@@ -523,7 +520,6 @@ zstd_decompress(void *s_start, void *d_start, size_t s_len, size_t d_len,
 {
 #ifdef DEBUG
 	test_level = level;
-	zstd_meminit();
 #endif /* DEBUG */
 
 	return (zstd_decompress_level(s_start, d_start, s_len, d_len, NULL));
@@ -653,11 +649,6 @@ zstd_mempool_init(void)
 static int __init
 zstd_meminit(void)
 {
-#ifdef DEBUG
-	if(mem_init_done)
-		return (0);
-#endif /* DEBUG */
-
 	zstd_mempool_init();
 
 	/*
@@ -667,10 +658,6 @@ zstd_meminit(void)
 	create_fallback_mem(&zstd_dctx_fallback,
 	    P2ROUNDUP(ZSTD_estimateDCtxSize() + sizeof (struct zstd_kmem),
 	    PAGESIZE));
-
-#ifdef DEBUG
-	mem_init_done = 1;
-#endif /* DEBUG */
 
 	return (0);
 }
@@ -705,9 +692,7 @@ zstd_init(void)
 {
 	/* Set pool size by using maximum sane thread count * 4 */
 	pool_count = (boot_ncpus * 4);
-#ifndef DEBUG
 	zstd_meminit();
-#endif /* DEBUG */
 
 	return (0);
 }
