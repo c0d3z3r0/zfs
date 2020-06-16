@@ -20,14 +20,14 @@
  */
 
 /*
- * Copyright (c) 2005, 2010, Oracle and/or its affiliates. All rights reserved.
- * Copyright (c) 2011, Nexenta Systems Inc. All rights reserved.
- * Copyright (c) 2011, 2020, Delphix. All rights reserved.
- * Copyright (c) 2014, Joyent Inc. All rights reserved.
- * Copyright (c) 2014, HybridCluster. All rights reserved.
- * Copyright (c) 2018, loli10K. All rights reserved.
+ * Copyright (c) 2005, 2010, Oracle and/or its affiliates
+ * Copyright (c) 2011, Nexenta Systems Inc.
+ * Copyright (c) 2011, 2020, Delphix
+ * Copyright (c) 2014, Joyent Inc.
+ * Copyright (c) 2014, HybridCluster
+ * Copyright (c) 2018, loli10K
  * Copyright (c) 2019, Klara Inc.
- * Copyright (c) 2019, Allan Jude.
+ * Copyright (c) 2019, Allan Jude
  * Use is subject to license terms.
  */
 

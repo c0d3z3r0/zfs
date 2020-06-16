@@ -20,16 +20,16 @@
  */
 
 /*
- * Copyright (c) 2005, 2010, Oracle and/or its affiliates. All rights reserved.
- * Copyright (c) 2011, 2019, Delphix. All rights reserved.
- * Copyright (c) 2011, Nexenta Systems Inc. All rights reserved.
- * Copyright (c) 2014, Spectra Logic Corporation. All rights reserved.
- * Copyright (c) 2013, Saso Kiselkov. All rights reserved.
- * Copyright (c) 2014, Integros. All rights reserved.
- * Copyright (c) 2017, Joyent, Inc. All rights reserved.
- * Copyright (c) 2017, Datto Inc. All rights reserved.
- * Copyright (c) 2017, Intel Corporation. All rights reserved.
- * Copyright (c) 2019, Allan Jude.
+ * Copyright (c) 2005, 2010, Oracle and/or its affiliates
+ * Copyright (c) 2011, 2019, Delphix
+ * Copyright (c) 2011, Nexenta Systems Inc.
+ * Copyright (c) 2014, Spectra Logic Corporation
+ * Copyright (c) 2013, Saso Kiselkov
+ * Copyright (c) 2014, Integros
+ * Copyright (c) 2017, Joyent, Inc.
+ * Copyright (c) 2017, Datto Inc.
+ * Copyright (c) 2017, Intel Corporation
+ * Copyright (c) 2019, Allan Jude
  * Copyright (c) 2019, Klara Inc.
  * Use is subject to license terms.
  */

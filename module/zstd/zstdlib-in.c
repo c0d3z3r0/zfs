@@ -6,8 +6,8 @@
  */
 
 /*
- * Copyright (c) 2016-2020, Yann Collet, Facebook, Inc. All rights reserved.
- * Copyright (c) 2019-2020, Michael Niewöhner. All rights reserved.
+ * Copyright (c) 2016-2020, Yann Collet, Facebook, Inc.
+ * Copyright (c) 2019-2020, Michael Niewöhner
  */
 
 #define	MEM_MODULE

@@ -20,25 +20,25 @@
  */
 
 /*
- * Copyright (c) 2005, 2010, Oracle and/or its affiliates. All rights reserved.
- * Copyright (c) 2011, Martin Matuska. All rights reserved.
- * Copyright (c) 2015, OmniTI Computer Consulting Inc. All rights reserved.
- * Copyright (c) 2012, Pawel Jakub Dawidek. All rights reserved.
- * Copyright (c) 2014, 2016, Joyent Inc. All rights reserved.
- * Copyright (c) 2016, Nexenta Systems Inc. All rights reserved.
- * Copyright (c) 2011, 2020, Delphix. All rights reserved.
- * Copyright (c) 2013, Saso Kiselkov. All rights reserved.
- * Copyright (c) 2013, Steven Hartland. All rights reserved.
- * Copyright (c) 2014, Integros. All rights reserved.
- * Copyright (c) 2016, Toomas Soome. All rights reserved.
- * Copyright (c) 2016, Actifio Inc. All rights reserved.
- * Copyright (c) 2018, loli10K <ezomori.nozomu@gmail.com>. All rights reserved.
- * Copyright (c) 2017, RackTop Systems. All rights reserved.
- * Copyright (c) 2017, Open-E Inc. All Rights Reserved.
- * Copyright (c) 2019, Datto Inc. All rights reserved.
- * Copyright (c) 2019, 2020, Christian Schwarz. All rights reserved.
+ * Copyright (c) 2005, 2010, Oracle and/or its affiliates
+ * Copyright (c) 2011, Martin Matuska
+ * Copyright (c) 2015, OmniTI Computer Consulting Inc.
+ * Copyright (c) 2012, Pawel Jakub Dawidek
+ * Copyright (c) 2014, 2016, Joyent Inc.
+ * Copyright (c) 2016, Nexenta Systems Inc.
+ * Copyright (c) 2011, 2020, Delphix
+ * Copyright (c) 2013, Saso Kiselkov
+ * Copyright (c) 2013, Steven Hartland
+ * Copyright (c) 2014, Integros
+ * Copyright (c) 2016, Toomas Soome
+ * Copyright (c) 2016, Actifio Inc.
+ * Copyright (c) 2018, loli10K <ezomori.nozomu@gmail.com>
+ * Copyright (c) 2017, RackTop Systems
+ * Copyright (c) 2017, Open-E Inc.
+ * Copyright (c) 2019, Datto Inc.
+ * Copyright (c) 2019, 2020, Christian Schwarz
  * Copyright (c) 2019, Klara Inc.
- * Copyright (c) 2019, Allan Jude.
+ * Copyright (c) 2019, Allan Jude
  * Use is subject to license terms.
  */
 

@@ -20,13 +20,13 @@
  */
 
 /*
- * Copyright (c) 2011, 2018, Delphix. All rights reserved.
- * Copyright (c) 2013, Saso Kiselkov. All rights reserved.
- * Copyright (c) 2013, Joyent Inc. All rights reserved.
- * Copyright (c) 2014, Nexenta Systems Inc. All rights reserved.
- * Copyright (c) 2017, Intel Corporation. All rights reserved.
+ * Copyright (c) 2011, 2018, Delphix
+ * Copyright (c) 2013, Saso Kiselkov
+ * Copyright (c) 2013, Joyent Inc.
+ * Copyright (c) 2014, Nexenta Systems Inc.
+ * Copyright (c) 2017, Intel Corporation
  * Copyright (c) 2019, Klara Inc.
- * Copyright (c) 2019, Allan Jude.
+ * Copyright (c) 2019, Allan Jude
  * Use is subject to license terms.
  */
 
