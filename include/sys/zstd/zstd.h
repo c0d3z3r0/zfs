@@ -25,6 +25,10 @@
  * Copyright (c) 2016-2018, Allan Jude.
  * Copyright (c) 2018-2019, Sebastian Gottschall. All rights reserved.
  * Copyright (c) 2019-2020, Michael Niewöhner. All rights reserved.
+ * Copyright (c) 2020 The FreeBSD Foundation.
+ *
+ * Portions of this software were developed by Allan Jude
+ * under sponsorship from the FreeBSD Foundation.
  */
 
 #ifndef	_ZFS_ZSTD_H
@@ -58,6 +62,14 @@ typedef struct zfs_zstd_header {
 
 	char data[];
 } zfs_zstdhdr_t;
+
+/*
+ * kstat helper macros
+ */
+#define	ZSTDSTAT(stat)		(zstd_stats.stat.value.ui64)
+#define	ZSTDSTAT_INCR(stat, val) \
+	atomic_add_64(&zstd_stats.stat.value.ui64, (val))
+#define	ZSTDSTAT_BUMP(stat)	ZSTDSTAT_INCR(stat, 1)
 
 /* (de)init for user space / kernel emulation */
 int zstd_init(void);
