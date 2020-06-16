@@ -20,10 +20,14 @@
  */
 
 /*
- * Copyright (c) 2016-2018, Klara Systems Inc. All rights reserved.
- * Copyright (c) 2016-2018, Allan Jude. All rights reserved.
+ * Copyright (c) 2016-2018, Klara Inc.
+ * Copyright (c) 2016-2018, Allan Jude.
  * Copyright (c) 2018-2020, Sebastian Gottschall. All rights reserved.
  * Copyright (c) 2019-2020, Michael Niewöhner. All rights reserved.
+ * Copyright (c) 2020 The FreeBSD Foundation. [1]
+ *
+ * [1] Portions of this software were developed by Allan Jude
+ * under sponsorship from the FreeBSD Foundation.
  */
 
 #include <sys/param.h>
@@ -36,28 +40,30 @@
 #define	ZSTD_STATIC_LINKING_ONLY
 #include "zstdlib.h"
 
-/*
- * ZSTD block header
- * NOTE: all fields in this header are in big endian order.
- */
-struct zstd_header {
-	/* Compressed size of data */
-	uint32_t c_len;
+kstat_t *zstd_ksp = NULL;
 
-	/*
-	 * Version and compression level
-	 * We have to choose a union here to handle endian conversation
-	 * correctly, since the version and level is bitmask encoded.
-	 */
-	union {
-		uint32_t raw_version_level;
-		struct {
-			uint32_t version : 24;
-			uint8_t level;
-		};
-	};
+typedef struct zstd_stats {
+	kstat_named_t	zstd_stat_alloc_fail;
+	kstat_named_t	zstd_stat_alloc_fallback;
+	kstat_named_t	zstd_stat_com_alloc_fail;
+	kstat_named_t	zstd_stat_dec_alloc_fail;
+	kstat_named_t	zstd_stat_com_inval;
+	kstat_named_t	zstd_stat_dec_inval;
+	kstat_named_t	zstd_stat_dec_header_inval;
+	kstat_named_t	zstd_stat_com_fail;
+	kstat_named_t	zstd_stat_dec_fail;
+} zstd_stats_t;
 
-	char data[];
+static zstd_stats_t zstd_stats = {
+	{ "alloc_fail",			KSTAT_DATA_UINT64 },
+	{ "alloc_fallback",		KSTAT_DATA_UINT64 },
+	{ "compress_alloc_fail",	KSTAT_DATA_UINT64 },
+	{ "decompress_alloc_fail",	KSTAT_DATA_UINT64 },
+	{ "compress_level_invalid",	KSTAT_DATA_UINT64 },
+	{ "decompress_level_invalid",	KSTAT_DATA_UINT64 },
+	{ "decompress_header_invalid",	KSTAT_DATA_UINT64 },
+	{ "compress_failed",		KSTAT_DATA_UINT64 },
+	{ "decompress_failed",		KSTAT_DATA_UINT64 },
 };
 
 /* Enums describing the allocator type specified by kmem_type in zstd_kmem */
@@ -94,8 +100,8 @@ struct zstd_fallback_mem {
 	kmutex_t barrier;
 };
 
-struct levelmap {
-	int16_t cookie;
+struct zstd_levelmap {
+	int16_t zstd_level;
 	enum zio_zstd_levels level;
 };
 
@@ -126,7 +132,7 @@ static const ZSTD_customMem zstd_dctx_malloc = {
 };
 
 /* Level map for converting ZFS internal levels to ZSTD levels and vice versa */
-static struct levelmap zstd_levels[] = {
+static struct zstd_levelmap zstd_levels[] = {
 	{ZIO_ZSTD_LEVEL_1, ZIO_ZSTD_LEVEL_1},
 	{ZIO_ZSTD_LEVEL_2, ZIO_ZSTD_LEVEL_2},
 	{ZIO_ZSTD_LEVEL_3, ZIO_ZSTD_LEVEL_3},
@@ -324,22 +330,22 @@ zstd_mempool_free(struct zstd_kmem *z)
 	mutex_exit(&z->pool->barrier);
 }
 
-/* Convert ZSTD level to ZFS internal, stored level */
+/* Convert ZFS internal enum to ZSTD level */
 static int
-zstd_enum_to_cookie(enum zio_zstd_levels level, int16_t *cookie)
+zstd_enum_to_level(enum zio_zstd_levels level, int16_t *zstd_level)
 {
 	if (level > 0 && level <= ZIO_ZSTD_LEVEL_19) {
-		*cookie = zstd_levels[level - 1].cookie;
+		*zstd_level = zstd_levels[level - 1].zstd_level;
 		return (0);
 	}
 	if (level >= ZIO_ZSTD_LEVEL_FAST_1 &&
 	    level <= ZIO_ZSTD_LEVEL_FAST_1000) {
-		*cookie = zstd_levels[level - ZIO_ZSTD_LEVEL_FAST_1
-		    + ZIO_ZSTD_LEVEL_19].cookie;
+		*zstd_level = zstd_levels[level - ZIO_ZSTD_LEVEL_FAST_1
+		    + ZIO_ZSTD_LEVEL_19].zstd_level;
 		return (0);
 	}
 
-	/* Invalid/unknown ZSTD level - this should never happen. */
+	/* Invalid/unknown zfs compression enum - this should never happen. */
 	return (1);
 }
 
@@ -349,8 +355,8 @@ zstd_compress(void *s_start, void *d_start, size_t s_len, size_t d_len,
     int level)
 {
 	size_t c_len;
-	int16_t levelcookie;
-	struct zstd_header *hdr;
+	int16_t zstd_level;
+	zfs_zstdhdr_t *hdr;
 	ZSTD_CCtx *cctx;
 
 #ifdef DEBUG
@@ -358,16 +364,17 @@ zstd_compress(void *s_start, void *d_start, size_t s_len, size_t d_len,
 	level = ZIO_ZSTD_LEVEL_1;
 #endif /* DEBUG */
 
-	hdr = (struct zstd_header *)d_start;
+	hdr = (zfs_zstdhdr_t *)d_start;
 
 	/* Skip compression if the specified level is invalid */
-	if (zstd_enum_to_cookie(level, &levelcookie)) {
+	if (zstd_enum_to_level(level, &zstd_level)) {
+		ZSTDSTAT_BUMP(zstd_stat_com_inval);
 		return (s_len);
 	}
 
 	ASSERT3U(d_len, >=, sizeof (*hdr));
 	ASSERT3U(d_len, <=, s_len);
-	ASSERT3U(levelcookie, !=, 0);
+	ASSERT3U(zstd_level, !=, 0);
 
 	cctx = ZSTD_createCCtx_advanced(zstd_malloc);
 
@@ -376,11 +383,12 @@ zstd_compress(void *s_start, void *d_start, size_t s_len, size_t d_len,
 	 * compression in zio_compress_data
 	 */
 	if (!cctx) {
+		ZSTDSTAT_BUMP(zstd_stat_com_alloc_fail);
 		return (s_len);
 	}
 
 	/* Set the compression level */
-	ZSTD_CCtx_setParameter(cctx, ZSTD_c_compressionLevel, levelcookie);
+	ZSTD_CCtx_setParameter(cctx, ZSTD_c_compressionLevel, zstd_level);
 
 	/* Use the "magicless" zstd header which saves us 4 header bytes */
 	ZSTD_CCtx_setParameter(cctx, ZSTD_c_format, ZSTD_f_zstd1_magicless);
@@ -401,6 +409,7 @@ zstd_compress(void *s_start, void *d_start, size_t s_len, size_t d_len,
 
 	/* Error in the compression routine, disable compression. */
 	if (ZSTD_isError(c_len)) {
+		ZSTDSTAT_BUMP(zstd_stat_com_fail);
 		return (s_len);
 	}
 
@@ -449,12 +458,12 @@ zstd_decompress_level(void *s_start, void *d_start, size_t s_len, size_t d_len,
 {
 	ZSTD_DCtx *dctx;
 	size_t result;
-	int16_t levelcookie;
+	int16_t zstd_level;
 	uint32_t c_len;
-	const struct zstd_header *hdr;
-	struct zstd_header hdr_copy;
+	const zfs_zstdhdr_t *hdr;
+	zfs_zstdhdr_t hdr_copy;
 
-	hdr = (const struct zstd_header *)s_start;
+	hdr = (const zfs_zstdhdr_t *)s_start;
 	c_len = BE_32(hdr->c_len);
 
 	/*
@@ -474,7 +483,8 @@ zstd_decompress_level(void *s_start, void *d_start, size_t s_len, size_t d_len,
 	 * An invalid level is a strong indicator for data corruption! In such
 	 * case return an error so the upper layers can try to fix it.
 	 */
-	if (zstd_enum_to_cookie(hdr_copy.level, &levelcookie)) {
+	if (zstd_enum_to_level(hdr_copy.level, &zstd_level)) {
+		ZSTDSTAT_BUMP(zstd_stat_dec_inval);
 		return (1);
 	}
 
@@ -483,11 +493,13 @@ zstd_decompress_level(void *s_start, void *d_start, size_t s_len, size_t d_len,
 
 	/* Invalid compressed buffer size encoded at start */
 	if (c_len + sizeof (*hdr) > s_len) {
+		ZSTDSTAT_BUMP(zstd_stat_dec_header_inval);
 		return (1);
 	}
 
 	dctx = ZSTD_createDCtx_advanced(zstd_dctx_malloc);
 	if (!dctx) {
+		ZSTDSTAT_BUMP(zstd_stat_dec_alloc_fail);
 		return (1);
 	}
 
@@ -503,6 +515,7 @@ zstd_decompress_level(void *s_start, void *d_start, size_t s_len, size_t d_len,
 	 * and non-zero on failure (decompression function returned negative.
 	 */
 	if (ZSTD_isError(result)) {
+		ZSTDSTAT_BUMP(zstd_stat_dec_fail);
 		return (1);
 	}
 
@@ -535,6 +548,7 @@ zstd_alloc(void *opaque __maybe_unused, size_t size)
 	z = (struct zstd_kmem *)zstd_mempool_alloc(zstd_mempool_cctx, nbytes);
 
 	if (!z) {
+		ZSTDSTAT_BUMP(zstd_stat_alloc_fail);
 		return (NULL);
 	}
 
@@ -565,6 +579,7 @@ zstd_dctx_alloc(void *opaque __maybe_unused, size_t size)
 		if (z) {
 			z->pool = NULL;
 		}
+		ZSTDSTAT_BUMP(zstd_stat_alloc_fail);
 	} else {
 		return ((void*)z + (sizeof (struct zstd_kmem)));
 	}
@@ -580,6 +595,7 @@ zstd_dctx_alloc(void *opaque __maybe_unused, size_t size)
 
 		z = zstd_dctx_fallback.mem;
 		type = ZSTD_KMEM_DCTX;
+		ZSTDSTAT_BUMP(zstd_stat_alloc_fallback);
 	}
 
 	/* Allocation should always be successful */
@@ -694,12 +710,23 @@ zstd_init(void)
 	pool_count = (boot_ncpus * 4);
 	zstd_meminit();
 
+	zstd_ksp = kstat_create("zfs", 0, "zstd", "misc",
+	    KSTAT_TYPE_NAMED, sizeof (zstd_stats) / sizeof (kstat_named_t),
+	    KSTAT_FLAG_VIRTUAL);
+	if (zstd_ksp != NULL) {
+		zstd_ksp->ks_data = &zstd_stats;
+		kstat_install(zstd_ksp);
+	}
 	return (0);
 }
 
 extern void __exit
 zstd_fini(void)
 {
+	if (zstd_ksp != NULL) {
+		kstat_delete(zstd_ksp);
+		zstd_ksp = NULL;
+	}
 	vmem_free(zstd_dctx_fallback.mem, zstd_dctx_fallback.mem_size);
 	mutex_destroy(&zstd_dctx_fallback.barrier);
 	zstd_mempool_deinit();

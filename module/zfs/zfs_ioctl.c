@@ -37,8 +37,8 @@
  * Copyright (c) 2017, Open-E Inc. All Rights Reserved.
  * Copyright (c) 2019, Datto Inc. All rights reserved.
  * Copyright (c) 2019, 2020, Christian Schwarz. All rights reserved.
- * Copyright (c) 2019, Klara Inc. All rights reserved.
- * Copyright (c) 2019, Allan Jude. All rights reserved.
+ * Copyright (c) 2019, Klara Inc.
+ * Copyright (c) 2019, Allan Jude.
  * Use is subject to license terms.
  */
 
