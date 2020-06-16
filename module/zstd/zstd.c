@@ -173,12 +173,6 @@ static struct zstd_levelmap zstd_levels[] = {
 	{-100, ZIO_ZSTD_LEVEL_FAST_100},
 	{-500, ZIO_ZSTD_LEVEL_FAST_500},
 	{-1000, ZIO_ZSTD_LEVEL_FAST_1000},
-#ifdef DEBUG
-	/* Levels for testing only */
-	{ZIO_ZSTD_KMEM_TEST_1, ZIO_ZSTD_KMEM_TEST_1},
-	{ZIO_ZSTD_KMEM_TEST_2, ZIO_ZSTD_KMEM_TEST_2},
-	{ZIO_ZSTD_KMEM_TEST_3, ZIO_ZSTD_KMEM_TEST_3},
-#endif /* DEBUG */
 };
 
 /*
@@ -193,10 +187,6 @@ static int pool_count = 16;
 static struct zstd_fallback_mem zstd_dctx_fallback;
 static struct zstd_pool *zstd_mempool_cctx;
 static struct zstd_pool *zstd_mempool_dctx;
-
-#ifdef DEBUG
-uint8_t test_level = 0;
-#endif /* DEBUG */
 
 /*
  * Try to get a cached allocated buffer from memory pool or allocate a new one
@@ -274,12 +264,7 @@ zstd_mempool_alloc(struct zstd_pool *zstd_mempool, size_t size)
 		if (mutex_tryenter(&pool->barrier)) {
 			/* Object is free, try to allocate new one */
 			if (!pool->mem) {
-#ifdef DEBUG
-				/* Skip ("fail") allocation in test level 1-2 */
-				if (test_level != ZIO_ZSTD_KMEM_TEST_1 &&
-				    test_level != ZIO_ZSTD_KMEM_TEST_2)
-#endif /* DEBUG */
-					mem = vmem_alloc(size, KM_SLEEP);
+				mem = vmem_alloc(size, KM_SLEEP);
 				pool->mem = mem;
 
 				if (pool->mem) {
@@ -308,11 +293,7 @@ zstd_mempool_alloc(struct zstd_pool *zstd_mempool, size_t size)
 	 * instead.
 	 */
 	if (!mem) {
-#ifdef DEBUG
-		/* Skip ("fail") allocation in test level 2 */
-		if (test_level != ZIO_ZSTD_KMEM_TEST_2)
-#endif /* DEBUG */
-			mem = vmem_alloc(size, KM_NOSLEEP);
+		mem = vmem_alloc(size, KM_NOSLEEP);
 		if (mem) {
 			mem->pool = NULL;
 			mem->kmem_type = ZSTD_KMEM_DEFAULT;
@@ -358,11 +339,6 @@ zstd_compress(void *s_start, void *d_start, size_t s_len, size_t d_len,
 	int16_t zstd_level;
 	zfs_zstdhdr_t *hdr;
 	ZSTD_CCtx *cctx;
-
-#ifdef DEBUG
-	test_level = level;
-	level = ZIO_ZSTD_LEVEL_1;
-#endif /* DEBUG */
 
 	hdr = (zfs_zstdhdr_t *)d_start;
 
@@ -531,9 +507,6 @@ int
 zstd_decompress(void *s_start, void *d_start, size_t s_len, size_t d_len,
     int level __maybe_unused)
 {
-#ifdef DEBUG
-	test_level = level;
-#endif /* DEBUG */
 
 	return (zstd_decompress_level(s_start, d_start, s_len, d_len, NULL));
 }
@@ -567,15 +540,9 @@ zstd_dctx_alloc(void *opaque __maybe_unused, size_t size)
 	enum zstd_kmem_type type = ZSTD_KMEM_DEFAULT;
 
 	z = (struct zstd_kmem *)zstd_mempool_alloc(zstd_mempool_dctx, nbytes);
-
-	/* Try harder, decompression shall not fail */
 	if (!z) {
-#ifdef DEBUG
-		/* Skip ("fail") allocation in test level 3 */
-		if (test_level != ZIO_ZSTD_KMEM_TEST_3)
-#endif /* DEBUG */
-			z = vmem_alloc(nbytes, KM_SLEEP);
-
+		/* Try harder, decompression shall not fail */
+		z = vmem_alloc(nbytes, KM_SLEEP);
 		if (z) {
 			z->pool = NULL;
 		}

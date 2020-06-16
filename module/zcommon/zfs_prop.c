@@ -208,15 +208,6 @@ zfs_prop_init(void)
 		    ZIO_COMPLEVEL_ZSTD(ZIO_ZSTD_LEVEL_FAST_500) },
 		{ "zstd-fast-1000",
 		    ZIO_COMPLEVEL_ZSTD(ZIO_ZSTD_LEVEL_FAST_1000) },
-#ifdef DEBUG
-		/* Levels for testing only */
-		{ "zstd-kmem-test-1",
-		    ZIO_COMPLEVEL_ZSTD(ZIO_ZSTD_KMEM_TEST_1) },
-		{ "zstd-kmem-test-2",
-		    ZIO_COMPLEVEL_ZSTD(ZIO_ZSTD_KMEM_TEST_2) },
-		{ "zstd-kmem-test-3",
-		    ZIO_COMPLEVEL_ZSTD(ZIO_ZSTD_KMEM_TEST_3) },
-#endif /* DEBUG */
 		{ NULL }
 	};
 
@@ -424,9 +415,6 @@ zfs_prop_init(void)
 	    ZFS_TYPE_FILESYSTEM | ZFS_TYPE_VOLUME,
 	    "on | off | lzjb | gzip | gzip-[1-9] | zle | lz4 | "
 	    "zstd | zstd-[1-19] | "
-#ifdef DEBUG
-	    "zstd-kmem-test-[1-3] | "
-#endif /* DEBUG */
 	    "zstd-fast-[1-10,20,30,40,50,60,70,80,90,100,500,1000]",
 	    "COMPRESS", compress_table);
 	zprop_register_index(ZFS_PROP_SNAPDIR, "snapdir", ZFS_SNAPDIR_HIDDEN,

@@ -89,9 +89,6 @@ props=(
 	compression     zstd		compression	zstd-$((RANDOM%9 + 1))
 	compression	zstd-fast	copies          $((RANDOM%3 + 1))
 	compression	zstd-fast-$((RANDOM%9 + 1))
-	compression	zstd-kmem-test-1
-	compression	zstd-kmem-test-2
-	compression	zstd-kmem-test-3
 )
 elif is_freebsd; then
 #	property	value		property	value

@@ -110,12 +110,6 @@ enum zio_zstd_levels {
 	ZIO_ZSTD_LEVEL_FAST_1000,
 #define	ZIO_ZSTD_LEVEL_FAST_MAX	ZIO_ZSTD_LEVEL_FAST_1000
 	ZIO_ZSTD_LEVEL_AUTO = 251, /* Reserved for future use */
-#ifdef DEBUG
-	/* Levels for testing only */
-	ZIO_ZSTD_KMEM_TEST_1,
-	ZIO_ZSTD_KMEM_TEST_2,
-	ZIO_ZSTD_KMEM_TEST_3,
-#endif /* DEBUG */
 	ZIO_ZSTD_LEVEL_LEVELS
 };
 
