@@ -1586,6 +1586,7 @@ snprintf_zstd_header(spa_t *spa, char *blkbuf, size_t buflen,
 		}
 		decode_embedded_bp_compressed(bp, buf);
 		memcpy(&zstd_hdr, buf, sizeof (zstd_hdr));
+		free(buf);
 		zstd_hdr.c_len = BE_32(zstd_hdr.c_len);
 		zstd_hdr.raw_version_level = BE_32(zstd_hdr.raw_version_level);
 		(void) snprintf(blkbuf + strlen(blkbuf),
