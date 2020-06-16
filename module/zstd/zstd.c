@@ -24,7 +24,7 @@
  * Copyright (c) 2016-2018, Allan Jude.
  * Copyright (c) 2018-2020, Sebastian Gottschall. All rights reserved.
  * Copyright (c) 2019-2020, Michael Niewöhner. All rights reserved.
- * Copyright (c) 2020 The FreeBSD Foundation. [1]
+ * Copyright (c) 2020, The FreeBSD Foundation. [1]
  *
  * [1] Portions of this software were developed by Allan Jude
  * under sponsorship from the FreeBSD Foundation.
@@ -710,6 +710,7 @@ zstd_init(void)
 	pool_count = (boot_ncpus * 4);
 	zstd_meminit();
 
+	/* Initialize kstat */
 	zstd_ksp = kstat_create("zfs", 0, "zstd", "misc",
 	    KSTAT_TYPE_NAMED, sizeof (zstd_stats) / sizeof (kstat_named_t),
 	    KSTAT_FLAG_VIRTUAL);
@@ -717,18 +718,24 @@ zstd_init(void)
 		zstd_ksp->ks_data = &zstd_stats;
 		kstat_install(zstd_ksp);
 	}
+
 	return (0);
 }
 
 extern void __exit
 zstd_fini(void)
 {
+	/* Deinitialize kstat */
 	if (zstd_ksp != NULL) {
 		kstat_delete(zstd_ksp);
 		zstd_ksp = NULL;
 	}
+
+	/* Release fallback memory */
 	vmem_free(zstd_dctx_fallback.mem, zstd_dctx_fallback.mem_size);
 	mutex_destroy(&zstd_dctx_fallback.barrier);
+
+	/* Deinit memory pool */
 	zstd_mempool_deinit();
 }
 
