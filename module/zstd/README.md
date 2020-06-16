@@ -1,10 +1,10 @@
-# ZSTD Contrib Library Manual
+# ZSTD-On-ZFS Library Manual
 
 ## Introduction
 
 This subtree contains the ZSTD library used in ZFS. It is heavily cut-down by
-dropping any unneeded files but otherwise is intentionally unmodified. Please do
-not alter these files in any way, besides upgrading to a newer ZSTD release.
+dropping any unneeded files, and combined into a single file, but otherwise is intentionally unmodified. Please do
+not alter the file containing the zstd library, besides upgrading to a newer ZSTD release.
 
 Tree structure:
 
@@ -41,3 +41,9 @@ cp ${zstd}/lib/zstd.h module/zstd/zstdlib.h
 ${zstd}/contrib/single_file_libs/combine.sh \
 	-r ${zstd}/lib -o module/zstd/zstdlib.c module/zstd/zstdlib-in.c
 ~~~
+
+
+## Altering ZSTD and breaking changes
+
+If ZSTD made changes that break compatibility or you want to make breaking changes to the way we handle ZSTD, we currently already save a zstd-on-zfs version number with the header. This version can be used to add future compatibility checks and/or fixes.
+However: Currently the version number is not actually used in such a way, so you need to write your own compatibility code.
