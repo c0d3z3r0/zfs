@@ -14,9 +14,9 @@
  */
 
 /*
- * Copyright (c) 2016, Delphix. All rights reserved.
+ * Copyright (c) 2016, Delphix
  * Copyright (c) 2019, Klara Inc.
- * Copyright (c) 2019, Allan Jude.
+ * Copyright (c) 2019, Allan Jude
  * Use is subject to license terms.
  */
 

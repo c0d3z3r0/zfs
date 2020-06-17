@@ -20,11 +20,11 @@
  */
 
 /*
- * Copyright (c) 2005, 2010, Oracle and/or its affiliates. All rights reserved.
- * Copyright (c) 2010, Robert Milkowski. All rights reserved.
- * Copyright (c) 2011, 2018, Delphix. All rights reserved.
- * Copyright (c) 2013, Saso Kiselkov. All rights reserved.
- * Copyright (c) 2016, Joyent, Inc. All rights reserved.
+ * Copyright (c) 2005, 2010, Oracle and/or its affiliates
+ * Copyright (c) 2010, Robert Milkowski
+ * Copyright (c) 2011, 2018, Delphix
+ * Copyright (c) 2013, Saso Kiselkov
+ * Copyright (c) 2016, Joyent, Inc.
  * Copyright (c) 2019, Klara Inc.
  * Use is subject to license terms.
  */

@@ -20,9 +20,9 @@
  */
 
 /*
- * Copyright (c) 2009, Sun Microsystems Inc. All rights reserved.
- * Copyright (c) 2015, 2016, Delphix. All rights reserved.
- * Copyright (c) 2019, Allan Jude.
+ * Copyright (c) 2009, Sun Microsystems Inc.
+ * Copyright (c) 2015, 2016, Delphix
+ * Copyright (c) 2019, Allan Jude
  * Copyright (c) 2019, Klara Inc.
  * Use is subject to license terms.
  */

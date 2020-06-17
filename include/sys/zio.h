@@ -20,13 +20,13 @@
  */
 
 /*
- * Copyright (c) 2005, 2010, Oracle and/or its affiliates. All rights reserved.
- * Copyright (c) 2011, Nexenta Systems, Inc. All rights reserved.
- * Copyright (c) 2012, 2018, Delphix. All rights reserved.
- * Copyright (c) 2013, Saso Kiselkov. All rights reserved.
- * Copyright (c) 2013, Joyent, Inc. All rights reserved.
- * Copyright (c) 2016, Toomas Soome. All rights reserved.
- * Copyright (c) 2019, Allan Jude.
+ * Copyright (c) 2005, 2010, Oracle and/or its affiliates
+ * Copyright (c) 2011, Nexenta Systems, Inc.
+ * Copyright (c) 2012, 2018, Delphix
+ * Copyright (c) 2013, Saso Kiselkov
+ * Copyright (c) 2013, Joyent, Inc.
+ * Copyright (c) 2016, Toomas Soome
+ * Copyright (c) 2019, Allan Jude
  * Copyright (c) 2019, Klara Inc.
  * Use is subject to license terms.
  */

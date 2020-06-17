@@ -20,11 +20,11 @@
  */
 
 /*
- * Copyright (c) 2009, Sun Microsystems Inc. All rights reserved.
- * Copyright (c) 2013, Saso Kiselkov. All rights reserved.
- * Copyright (c) 2013, 2018, Delphix. All rights reserved.
+ * Copyright (c) 2009, Sun Microsystems Inc.
+ * Copyright (c) 2013, Saso Kiselkov
+ * Copyright (c) 2013, 2018, Delphix
  * Copyright (c) 2019, Klara Inc.
- * Copyright (c) 2019, Allan Jude.
+ * Copyright (c) 2019, Allan Jude
  * Use is subject to license terms.
  */
 
