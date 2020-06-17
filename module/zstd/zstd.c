@@ -264,7 +264,9 @@ zstd_mempool_alloc(struct zstd_pool *zstd_mempool, size_t size)
 		if (mutex_tryenter(&pool->barrier)) {
 			/* Object is free, try to allocate new one */
 			if (!pool->mem) {
+#if 0
 				mem = vmem_alloc(size, KM_SLEEP);
+#endif
 				pool->mem = mem;
 
 				if (pool->mem) {
