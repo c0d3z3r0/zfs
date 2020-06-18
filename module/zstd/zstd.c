@@ -293,9 +293,7 @@ zstd_mempool_alloc(struct zstd_pool *zstd_mempool, size_t size)
 	 * instead.
 	 */
 	if (!mem) {
-#if 0
 		mem = vmem_alloc(size, KM_NOSLEEP);
-#endif
 		if (mem) {
 			mem->pool = NULL;
 			mem->kmem_type = ZSTD_KMEM_DEFAULT;
