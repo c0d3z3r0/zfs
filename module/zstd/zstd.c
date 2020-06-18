@@ -539,10 +539,14 @@ zstd_dctx_alloc(void *opaque __maybe_unused, size_t size)
 	struct zstd_kmem *z = NULL;
 	enum zstd_kmem_type type = ZSTD_KMEM_DEFAULT;
 
+#if 0
 	z = (struct zstd_kmem *)zstd_mempool_alloc(zstd_mempool_dctx, nbytes);
+#endif
 	if (!z) {
+#if 0
 		/* Try harder, decompression shall not fail */
 		z = vmem_alloc(nbytes, KM_SLEEP);
+#endif
 		if (z) {
 			z->pool = NULL;
 		}
