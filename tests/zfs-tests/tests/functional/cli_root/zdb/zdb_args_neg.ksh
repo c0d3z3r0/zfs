@@ -21,12 +21,9 @@
 #
 
 #
-# Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
+# Copyright (c) 2012, 2017, Delphix
+# Copyright (c) 2008, Sun Microsystems Inc.
 # Use is subject to license terms.
-#
-
-#
-# Copyright (c) 2012, 2017 by Delphix. All rights reserved.
 #
 
 . $STF_SUITE/include/libtest.shlib

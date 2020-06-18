@@ -19,11 +19,11 @@
  * CDDL HEADER END
  */
 /*
- * Copyright (c) 2005, 2010, Oracle and/or its affiliates. All rights reserved.
- * Copyright (c) 2013, Delphix. All rights reserved.
- * Copyright (c) 2013, Saso Kiselkov. All rights reserved.
- * Copyright (c) 2013, Nexenta Systems, Inc.  All rights reserved.
- * Copyright (c) 2020, George Amanakis. All rights reserved.
+ * Copyright (c) 2005, 2010, Oracle and/or its affiliates
+ * Copyright (c) 2013, Delphix
+ * Copyright (c) 2013, Saso Kiselkov
+ * Copyright (c) 2013, Nexenta Systems, Inc.
+ * Copyright (c) 2020, George Amanakis
  */
 
 #ifndef _SYS_ARC_IMPL_H

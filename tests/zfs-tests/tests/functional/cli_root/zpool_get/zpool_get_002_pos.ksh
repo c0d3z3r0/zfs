@@ -21,13 +21,11 @@
 #
 
 #
-# Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
+# Copyright (c) 2008 Sun Microsystems Inc.
+# Copyright (c) 2013, 2016 Delphix
 # Use is subject to license terms.
 #
 
-#
-# Copyright (c) 2013, 2016 by Delphix. All rights reserved.
-#
 
 . $STF_SUITE/include/libtest.shlib
 . $STF_SUITE/tests/functional/cli_root/zpool_get/zpool_get.cfg

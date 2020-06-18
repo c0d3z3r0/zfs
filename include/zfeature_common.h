@@ -20,10 +20,10 @@
  */
 
 /*
- * Copyright (c) 2011, 2018 by Delphix. All rights reserved.
- * Copyright (c) 2013 by Saso Kiselkov. All rights reserved.
- * Copyright (c) 2013, Joyent, Inc. All rights reserved.
- * Copyright (c) 2017, Intel Corporation.
+ * Copyright (c) 2011, 2018, Delphix
+ * Copyright (c) 2013, Saso Kiselkov
+ * Copyright (c) 2013, Joyent Inc.
+ * Copyright (c) 2017, Intel Inc.
  */
 
 #ifndef _ZFEATURE_COMMON_H

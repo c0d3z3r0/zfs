@@ -24,7 +24,7 @@
  */
 
 /*
- * Copyright (c) 2018-2020, Sebastian Gottschall. All rights reserved.
+ * Copyright (c) 2018-2020, Sebastian Gottschall
  */
 
 #ifdef _KERNEL

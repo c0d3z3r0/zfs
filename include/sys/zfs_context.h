@@ -19,10 +19,11 @@
  * CDDL HEADER END
  */
 /*
- * Copyright (c) 2005, 2010, Oracle and/or its affiliates. All rights reserved.
- * Copyright 2011 Nexenta Systems, Inc.  All rights reserved.
- * Copyright (c) 2012, 2018 by Delphix. All rights reserved.
- * Copyright (c) 2012, Joyent, Inc. All rights reserved.
+ * Copyright (c) 2005, 2010, Oracle and/or its affiliates
+ * Copyright (c) 2011, Nexenta Systems Inc.
+ * Copyright (c) 2012, 2018, Delphix
+ * Copyright (c) 2012, Joyent Inc.
+ * Copyright (c) 2020, Michael Niewöhner
  */
 
 #ifndef _SYS_ZFS_CONTEXT_H

@@ -21,10 +21,10 @@
 
 /*
  * Copyright (c) 2016-2018, Klara Inc.
- * Copyright (c) 2016-2018, Allan Jude.
- * Copyright (c) 2018-2020, Sebastian Gottschall. All rights reserved.
- * Copyright (c) 2019-2020, Michael Niewöhner. All rights reserved.
- * Copyright (c) 2020, The FreeBSD Foundation. [1]
+ * Copyright (c) 2016-2018, Allan Jude
+ * Copyright (c) 2018-2020, Sebastian Gottschall
+ * Copyright (c) 2019-2020, Michael Niewöhner
+ * Copyright (c) 2020, The FreeBSD Foundation [1]
  *
  * [1] Portions of this software were developed by Allan Jude
  * under sponsorship from the FreeBSD Foundation.

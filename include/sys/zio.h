@@ -28,6 +28,7 @@
  * Copyright (c) 2016, Toomas Soome
  * Copyright (c) 2019, Allan Jude
  * Copyright (c) 2019, Klara Inc.
+ * Copyright (c) 2019-2020, Michael Niewöhner
  * Use is subject to license terms.
  */
 
