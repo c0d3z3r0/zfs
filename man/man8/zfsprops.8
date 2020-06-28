@@ -866,10 +866,8 @@ level by using the value
 .Sy zstd-fast- Ns Em N ,
 where
 .Em N
-is an integer from 100
-.Pq fastest
-to 1
-.Pq best compression ratio .
+is an integer in [1-9,10,20,30,...,100,500,1000] with 1000 for fastest
+compression and 1 for best compression ratio (inverted order).
 .Sy zstd-fast
 is equivalent to
 .Sy zstd-fast-1 .
