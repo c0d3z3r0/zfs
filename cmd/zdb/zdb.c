@@ -2795,10 +2795,8 @@ dump_object(objset_t *os, uint64_t object, int verbosity,
 		    " (K=%s)", ZDB_CHECKSUM_NAME(doi.doi_checksum));
 	}
 
-	if (doi.doi_compress != ZIO_COMPRESS_INHERIT) {
-		(void) snprintf(aux + strlen(aux), sizeof (aux) - strlen(aux),
-		    " (Z=%s)", ZDB_COMPRESS_NAME(doi.doi_compress));
-	} else if (ZIO_COMPRESS_HASLEVEL(os->os_compress)) {
+	if (doi.doi_compress == ZIO_COMPRESS_INHERIT &&
+	    ZIO_COMPRESS_HASLEVEL(os->os_compress) && verbosity >= 6) {
 		const char *compname = NULL;
 		if (zfs_prop_index_to_string(ZFS_PROP_COMPRESSION,
 		    ZIO_COMPRESS_RAW(os->os_compress, os->os_complevel),
@@ -2812,9 +2810,12 @@ dump_object(objset_t *os, uint64_t object, int verbosity,
 			    " (Z=inherit=%s-unknown)",
 			    ZDB_COMPRESS_NAME(os->os_compress));
 		}
-	} else {
+	} else if (doi.doi_compress == ZIO_COMPRESS_INHERIT && verbosity >= 6) {
 		(void) snprintf(aux + strlen(aux), sizeof (aux) - strlen(aux),
 		    " (Z=inherit=%s)", ZDB_COMPRESS_NAME(os->os_compress));
+	} else if (doi.doi_compress != ZIO_COMPRESS_INHERIT || verbosity >= 6) {
+		(void) snprintf(aux + strlen(aux), sizeof (aux) - strlen(aux),
+		    " (Z=%s)", ZDB_COMPRESS_NAME(doi.doi_compress));
 	}
 
 	(void) printf("%10lld  %3u  %5s  %5s  %5s  %6s  %5s  %6s  %s%s\n",
