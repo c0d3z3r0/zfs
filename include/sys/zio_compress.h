@@ -58,7 +58,7 @@ enum zio_compress {
 };
 
 /* Compression algorithms that have levels */
-#define ZIO_COMPRESS_HASLEVEL(compress)	((compress == ZIO_COMPRESS_ZSTD || \
+#define	ZIO_COMPRESS_HASLEVEL(compress)	((compress == ZIO_COMPRESS_ZSTD || \
 					(compress >= ZIO_COMPRESS_GZIP_1 && \
 					compress <= ZIO_COMPRESS_GZIP_9)))
 
