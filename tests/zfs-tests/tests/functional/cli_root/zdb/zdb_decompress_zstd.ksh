@@ -42,7 +42,7 @@ function cleanup
 
 log_assert "Verify zdb -Z (read ZSTD header) works as expected"
 log_onexit cleanup
-src_data=$STF_SUITE/tests/functional/cli_root/zdb/zstd_test_data.txt
+src_data=$STF_SUITE/tests/zstd_test_data.txt
 init_data=$TESTDIR/file1
 write_count=128
 blksize=131072
