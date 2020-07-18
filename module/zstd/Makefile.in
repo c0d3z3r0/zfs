@@ -1,8 +1,10 @@
 ifneq ($(KBUILD_EXTMOD),)
 src = @abs_srcdir@
 obj = @abs_builddir@
+mfdir = $(obj)
 zstd_include = $(src)/include
 else
+mfdir = $(srctree)/$(src)
 zstd_include = $(srctree)/$(src)/include
 endif
 
@@ -28,3 +30,5 @@ $(obj)/zstdlib.o: c_flags += -include $(zstd_include)/aarch64_compat.h
 
 $(MODULE)-objs += zstd.o
 $(MODULE)-objs += zstdlib.o
+
+include $(mfdir)/../os/linux/zstd/Makefile

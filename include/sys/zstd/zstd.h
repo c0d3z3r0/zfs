@@ -42,46 +42,17 @@
 #ifndef	_ZFS_ZSTD_H
 #define	_ZFS_ZSTD_H
 
+#include <sys/zfs_context.h>
+
 #ifdef	__cplusplus
 extern "C" {
 #endif
 
-/*
- * ZSTD block header
- * NOTE: all fields in this header are in big endian order.
- */
-typedef struct zfs_zstd_header {
-	/* Compressed size of data */
-	uint32_t c_len;
-
-	/*
-	 * Version and compression level
-	 * We use a union to be able to big endian encode a single 32 bit
-	 * unsigned integer, but still access the individual bitmasked
-	 * components easily.
-	 */
-	union {
-		uint32_t raw_version_level;
-		struct {
-			uint32_t version : 24;
-			uint8_t level;
-		};
-	};
-
-	char data[];
-} zfs_zstdhdr_t;
-
-/*
- * kstat helper macros
- */
-#define	ZSTDSTAT(stat)		(zstd_stats.stat.value.ui64)
-#define	ZSTDSTAT_INCR(stat, val) \
-	atomic_add_64(&zstd_stats.stat.value.ui64, (val))
-#define	ZSTDSTAT_BUMP(stat)	ZSTDSTAT_INCR(stat, 1)
-
 /* (de)init for user space / kernel emulation */
 int zstd_init(void);
 void zstd_fini(void);
+extern int zstd_init_os(void);
+extern void zstd_fini_os(void);
 
 size_t zstd_compress(void *s_start, void *d_start, size_t s_len, size_t d_len,
     int level);

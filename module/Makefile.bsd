@@ -14,6 +14,7 @@ KMOD=	openzfs
 	${SRCDIR}/nvpair \
 	${SRCDIR}/os/freebsd/spl \
 	${SRCDIR}/os/freebsd/zfs \
+	${SRCDIR}/os/freebsd/zstd \
 	${SRCDIR}/unicode \
 	${SRCDIR}/zcommon \
 	${SRCDIR}/zfs \
@@ -27,6 +28,7 @@ CFLAGS+= -I${INCDIR}/spl
 CFLAGS+= -I${INCDIR}/os/freebsd
 CFLAGS+= -I${INCDIR}/os/freebsd/spl
 CFLAGS+= -I${INCDIR}/os/freebsd/zfs
+CFLAGS+= -I${SRCDIR}/zstd
 CFLAGS+= -I${SRCDIR}/zstd/include
 CFLAGS+= -include ${INCDIR}/os/freebsd/spl/sys/ccompile.h
 
@@ -298,6 +300,7 @@ SRCS+=	abd.c \
 
 #zstd
 SRCS+=	zstd.c \
+	zstd_os.c \
 	zstdlib.c
 
 beforeinstall:
@@ -356,4 +359,5 @@ CFLAGS.zil.c= -Wno-cast-qual
 CFLAGS.zio.c= -Wno-cast-qual
 CFLAGS.zrlock.c= -Wno-cast-qual
 CFLAGS.zstd.c= -Wno-cast-qual -Wno-pointer-arith
+CFLAGS.zstd_os.c= -Wno-cast-qual -Wno-pointer-arith
 CFLAGS.zstdlib.c= -fno-tree-vectorize

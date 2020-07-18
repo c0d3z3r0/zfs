@@ -1,6 +1,13 @@
 include $(top_srcdir)/config/Rules.am
 
 VPATH = $(top_srcdir)/module/zstd
+if BUILD_FREEBSD
+VPATH +=	$(top_srcdir)/module/os/freebsd/zstd
+else
+VPATH +=	$(top_srcdir)/module/os/linux/zstd
+endif
+
+DEFAULT_INCLUDES += -I$(top_srcdir)/module/zstd
 
 # Includes kernel code, generate warnings for large stack frames
 AM_CFLAGS += $(FRAME_LARGER_THAN)
@@ -9,6 +16,7 @@ noinst_LTLIBRARIES = libzstd.la
 
 KERNEL_C = \
 	zstdlib.c \
+	zstd_os.c \
 	zstd.c
 
 nodist_libzstd_la_SOURCES = $(KERNEL_C)
