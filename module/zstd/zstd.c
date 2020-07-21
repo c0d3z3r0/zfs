@@ -187,7 +187,16 @@ zstd_compress(void *s_start, void *d_start, size_t s_len, size_t d_len,
 
 	/* Error in the compression routine, disable compression. */
 	if (ZSTD_isError(c_len)) {
-		ZSTDSTAT_BUMP(zstd_stat_com_fail);
+		/*
+		 * If we are aborting the compression because the saves are
+		 * too small, that is not a failure. Everything else is a
+		 * failure, so increment the compression failure counter.
+		 *
+		 * ZSTD_error_dstSize_tooSmall = -70
+		 */
+		if (c_len != -70) {
+			ZSTDSTAT_BUMP(zstd_stat_com_fail);
+		}
 		return (s_len);
 	}
 
