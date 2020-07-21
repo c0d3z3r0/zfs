@@ -41,6 +41,7 @@ wget -O /tmp/zstd.tar.gz \
 tar -C /tmp -xzf /tmp/zstd.tar.gz
 
 cp ${zstd}/lib/zstd.h module/zstd/zstdlib.h
+cp ${zstd}/lib/zstd_errors.h module/zstd/zstd_errors.h
 ${zstd}/contrib/single_file_libs/combine.sh \
     -r ${zstd}/lib -o module/zstd/zstdlib.c module/zstd/zstdlib-in.c
 ~~~
