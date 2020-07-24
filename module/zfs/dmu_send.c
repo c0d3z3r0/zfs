@@ -1985,10 +1985,6 @@ setup_featureflags(struct dmu_send_params *dspp, objset_t *os,
 	    dsl_dataset_feature_is_active(to_ds, SPA_FEATURE_ZSTD_COMPRESS)) {
 		*featureflags |= DMU_BACKUP_FEATURE_ZSTD;
 	}
-	if ((*featureflags & DMU_BACKUP_FEATURE_EMBED_DATA) != 0 &&
-	    (*featureflags & DMU_BACKUP_FEATURE_ZSTD) == 0) {
-		/* XXX: Issue a warning */
-	}
 
 	if (dspp->resumeobj != 0 || dspp->resumeoff != 0) {
 		*featureflags |= DMU_BACKUP_FEATURE_RESUMING;
