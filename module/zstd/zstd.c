@@ -47,8 +47,8 @@
 #include <sys/zstd/zstd.h>
 
 #define	ZSTD_STATIC_LINKING_ONLY
-#include "zstdlib.h"
-#include "zstd_errors.h"
+#include "lib/zstd.h"
+#include "lib/zstd_errors.h"
 
 kstat_t *zstd_ksp = NULL;
 

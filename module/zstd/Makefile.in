@@ -27,4 +27,4 @@ $(obj)/zstdlib.o: c_flags += -Wframe-larger-than=20480
 $(obj)/zstdlib.o: c_flags += -include $(zstd_include)/aarch64_compat.h
 
 $(MODULE)-objs += zstd.o
-$(MODULE)-objs += zstdlib.o
+$(MODULE)-objs += lib/zstd.o
