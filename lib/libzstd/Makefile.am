@@ -8,16 +8,16 @@ AM_CFLAGS += $(FRAME_LARGER_THAN)
 noinst_LTLIBRARIES = libzstd.la
 
 KERNEL_C = \
-	zstdlib.c \
+	lib/zstd.c \
 	zstd.c
 
 nodist_libzstd_la_SOURCES = $(KERNEL_C)
 
 # -fno-tree-vectorize is set for gcc in zstd/common/compiler.h
 # Set it for other compilers, too.
-zstdlib.$(OBJEXT):  CFLAGS += -fno-tree-vectorize
-zstdlib.l$(OBJEXT): CFLAGS += -fno-tree-vectorize
+lib/zstd.$(OBJEXT):  CFLAGS += -fno-tree-vectorize
+lib/zstd.l$(OBJEXT): CFLAGS += -fno-tree-vectorize
 
 # Quiet warnings about frame size due to unused code in unmodified zstd lib
-zstdlib.$(OBJEXT):  CFLAGS += -Wframe-larger-than=20480
-zstdlib.l$(OBJEXT): CFLAGS += -Wframe-larger-than=20480
+lib/zstd.$(OBJEXT):  CFLAGS += -Wframe-larger-than=20480
+lib/zstd.l$(OBJEXT): CFLAGS += -Wframe-larger-than=20480
