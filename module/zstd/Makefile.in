@@ -18,13 +18,13 @@ ccflags-y += -O3
 
 # -fno-tree-vectorize gets set for gcc in zstd/common/compiler.h
 # Set it for other compilers, too.
-$(obj)/zstdlib.o: c_flags += -fno-tree-vectorize
+$(obj)/lib/zstd.o: c_flags += -fno-tree-vectorize
 
 # Quiet warnings about frame size due to unused code in unmodified zstd lib
-$(obj)/zstdlib.o: c_flags += -Wframe-larger-than=20480
+$(obj)/lib/zstd.o: c_flags += -Wframe-larger-than=20480
 
 # Disable aarch64 neon SIMD instructions for kernel mode
-$(obj)/zstdlib.o: c_flags += -include $(zstd_include)/aarch64_compat.h
+$(obj)/lib/zstd.o: c_flags += -include $(zstd_include)/aarch64_compat.h
 
 $(MODULE)-objs += zstd.o
 $(MODULE)-objs += lib/zstd.o
