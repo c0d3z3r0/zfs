@@ -28,3 +28,6 @@ $(obj)/lib/zstd.o: c_flags += -include $(zstd_include)/aarch64_compat.h
 
 $(MODULE)-objs += zstd.o
 $(MODULE)-objs += lib/zstd.o
+
+all:
+	mkdir -p lib
