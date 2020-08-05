@@ -15,7 +15,7 @@
 #
 
 #
-# Copyright (c) 2020, Allan Jude [1]
+# Copyright (c) 2020 The FreeBSD Foundation [1]
 #
 # [1] Portions of this software were developed by Allan Jude
 #     under sponsorship from the FreeBSD Foundation.
