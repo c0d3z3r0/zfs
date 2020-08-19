@@ -979,10 +979,6 @@ This feature becomes \fBactive\fR once a \fBcompress\fR property has been set to
 have ever had their compress property set to \fBzstd\fR are destroyed.
 
 Booting off of \fBzstd\fR-compressed root pools is not yet supported.
-
-Sending a \fBzstd\fR dataset to a non-\fBzstd\fR pool by \fBzfs send -e\fR is
-not possible and will result in an error. Either drop the \fB-e\fR option or
-enable \fBzstd\fR on the receiver pool.
 .RE
 
 .SH "SEE ALSO"
