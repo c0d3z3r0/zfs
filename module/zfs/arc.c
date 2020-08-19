@@ -8787,9 +8787,8 @@ l2arc_apply_transforms(spa_t *spa, arc_buf_hdr_t *hdr, uint64_t asize,
 
 		if (psize >= size) {
 			abd_return_buf(cabd, tmp, asize);
-			abd_free(cabd);
 			HDR_SET_COMPRESS(hdr, ZIO_COMPRESS_OFF);
-			to_write = abd_alloc_for_io(asize, ismd);
+			to_write = cabd;
 			abd_copy(to_write, hdr->b_l1hdr.b_pabd, size);
 			if (size != asize)
 				abd_zero_off(to_write, size, asize - size);
